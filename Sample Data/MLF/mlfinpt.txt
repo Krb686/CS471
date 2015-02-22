@@ -1,0 +1,25 @@
+
+/* Input file for an MLF Queue Scheduler with three levels */ 
+
+Time Quantum 1: 50
+Time Quantum 2: 70
+
+Process ID: 1
+Arrival time: 0 
+CPU burst: 130
+I/O burst: 200
+I/O device id: 1
+CPU burst: 50
+I/O burst: 120
+I/O device id: 1
+
+
+Process ID: 2
+Arrival time: 30 
+CPU burst: 220
+I/O burst: 200
+I/O device id: 1
+CPU burst: 80
+I/O burst: 250
+I/O device id: 2
+

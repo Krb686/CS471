@@ -1,0 +1,235 @@
+ 
+/* Output File  for an MLF Queue with three levels */ 
+/* Time Quantum for Ready Queue Q1 = 50 */
+/* Time Quantum for Ready Queue Q2 = 70 */
+
+
+
+Time =      0: Process 1 arrives
+               Process 1 requests CPU
+               Ready Queue Q1 = [Process 1]
+               Ready Queue Q2 = [ ]
+               Ready Queue Q3 = [ ]
+               I/O Device 1 Queue = [ ]
+               I/O Device 2 Queue = [ ]
+               Dispatcher moves Process 1 to Running State
+               Ready Queue Q1 = [ ]
+               Ready Queue Q2 = [ ]
+               Ready Queue Q3 = [ ]
+               I/O Device 1 Queue = [ ]
+               I/O Device 2 Queue = [ ]
+               Process 1 starts running
+               
+Time =     30: Process 2 arrives
+               Process 2 requests CPU
+               Ready Queue Q1 = [Process 2]
+               Ready Queue Q2 = [ ]
+               Ready Queue Q3 = [ ]
+               I/O Device 1 Queue = [ ]
+               I/O Device 2 Queue = [ ]
+
+Time =     50: Process 1 is preempted
+               Process 1 is demoted to Ready Queue Q2
+               Ready Queue Q1 = [Process 2]
+               Ready Queue Q2 = [Process 1]
+               Ready Queue Q3 = [ ]
+               I/O Device 1 Queue = [ ]
+               I/O Device 2 Queue = [ ]
+               Dispatcher moves Process 2 to Running State
+               Ready Queue Q1 = [ ]
+               Ready Queue Q2 = [Process 1]
+               Ready Queue Q3 = [ ]
+               I/O Device 1 Queue = [ ]
+               I/O Device 2 Queue = [ ]
+               Process 2 starts running
+               
+Time =    100: Process 2 is preempted
+               Process 2 is demoted to Ready Queue Q2
+               Ready Queue Q1 = [ ]
+               Ready Queue Q2 = [Process 1 , Process 2]
+               Ready Queue Q3 = [ ]
+               I/O Device 1 Queue = [ ]
+               I/O Device 2 Queue = [ ]
+               Dispatcher moves Process 1 to Running State
+               Ready Queue Q1 = [ ]
+               Ready Queue Q2 = [Process 2]
+               Ready Queue Q3 = [ ]
+               I/O Device 1 Queue = [ ]
+               I/O Device 2 Queue = [ ]
+               Process 1 starts running
+               
+
+Time =    170: Process 1 is preempted
+               Process 1 is demoted to Ready Queue Q3
+               Ready Queue Q1 = [ ]
+               Ready Queue Q2 = [Process 2]
+               Ready Queue Q3 = [Process 1]
+               I/O Device 1 Queue = [ ]
+               I/O Device 2 Queue = [ ]
+               Dispatcher moves Process 2 to Running State
+               Ready Queue Q1 = [ ]
+               Ready Queue Q2 = [ ]
+               Ready Queue Q3 = [Process 1]
+               I/O Device 1 Queue = [ ]
+               I/O Device 2 Queue = [ ]
+               Process 2 starts running
+               
+
+Time =    240: Process 2 is preempted
+               Process 2 is demoted to Ready Queue Q3
+               Ready Queue Q1 = [ ]
+               Ready Queue Q2 = [ ] 
+               Ready Queue Q3 = [Process 1, Process 2]
+               I/O Device 1 Queue = [ ]
+               I/O Device 2 Queue = [ ]
+               Dispatcher moves Process 1 to Running State
+               Ready Queue Q1 = [ ]
+               Ready Queue Q2 = [ ]
+               Ready Queue Q3 = [Process 2]
+               I/O Device 1 Queue = [ ]
+               I/O Device 2 Queue = [ ]
+               Process 1 starts running
+               
+               
+Time =   250: CPU burst of Process 1 completes
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [Process 2]
+              I/O Device 1 Queue = [ ]
+              I/O Device 2 Queue = [ ]
+              Process 1 requests I/O on Device 1
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [Process 2]
+              Device 1 Queue = [Process 1]
+              Device 2 Queue = [ ]
+              I/O Device 1 now in use by Process 1 
+              Dispatcher moves Process 2 to Running State
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [ ]
+              Device 1 Queue = [Process 1]
+              Device 2 Queue = [ ]
+              Process 2 starts running
+              
+
+Time =   350: CPU burst of Process 2 completes
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [ ]
+              Device 1 Queue = [Process 1]
+              Device 2 Queue = [ ]
+              Process 2 requests I/O on Device 1
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [ ]
+              Device 1 Queue = [Process 1, Process 2]
+              Device 2 Queue = [ ]
+                 
+
+Time =   450: I/O burst of Process 1 completes
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [ ]
+              Device 1 Queue = [Process 2]
+              Device 2 Queue = [ ]
+              I/O Device 1 now in use by Process 2
+              Process 1 requests CPU
+              Ready Queue Q1 = [Process 1]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [ ]
+              Device 1 Queue = [Process 2]
+              Device 2 Queue = [ ]
+              Dispatcher moves Process 1 to Running State
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [ ]
+              Device 1 Queue = [Process 2]
+              Device 2 Queue = [ ]
+              Process 1 starts running
+              
+
+Time =   500: CPU burst of Process 1 completes
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [ ]
+              Device 1 Queue = [Process 2]
+              Device 2 Queue = [ ]
+              Process 1 requests I/O on Device 1
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [ ]
+              Device 1 Queue = [Process 2, Process 1]
+              Device 2 Queue = [ ]
+              
+
+Time =   650: I/O burst of Process 2 completes 
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [ ] 
+              Device 1 Queue = [Process 1]
+              Device 2 Queue = [ ]
+              I/O Device 1 now in use by Process 1
+              Process 2 requests CPU  
+              Ready Queue Q1 = [Process 2]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [ ] 
+              Device 1 Queue = [Process 1]
+              Device 2 Queue = [ ]
+              Dispatcher moves Process 2 to Running State  
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [ ] 
+              Device 1 Queue = [Process 1]
+              Device 2 Queue = [ ]
+              Process 2 starts running
+              
+Time =  700:  Process 2 is preempted
+              Process 2 is demoted to Ready Queue Q2
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [Process 2]  
+              Ready Queue Q3 = [ ]
+              Device 1 Queue = [Process 1]
+              Device 2 Queue = [ ]
+              Dispatcher moves Process 2 to Running State
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [ ]
+              Device 1 Queue = [Process 1]
+              Device 2 Queue = [ ]
+              Process 2 starts running
+              
+Time =  730:  CPU burst of Process 2 completes
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [ ]
+              Device 1 Queue = [Process 1]
+              Device 2 Queue = [ ]
+              Process 2 requests I/O on Device 2
+              Ready Queue Q1 = [ ]
+              Ready Queue Q2 = [ ]
+              Ready Queue Q3 = [ ]
+              Device 1 Queue = [Process 1]
+              Device 2 Queue = [Process 2]
+              I/O Device 2 now in use by Process 2
+              
+              
+Time =  770: I/O burst of Process 1 completes
+             Process 1 completes  
+             Ready Queue Q1 = [ ]
+             Ready Queue Q2 = [ ]
+             Ready Queue Q3 = [ ]
+             Device 1 Queue = [ ]
+             Device 2 Queue = [Process 2]
+
+Time =  980: I/O burst of Process 2 completes 
+             Process 2 completes
+             Ready Queue Q1 = [ ]
+             Ready Queue Q2 = [ ]
+             Ready Queue Q3 = [ ]
+             Device 1 Queue   = [ ]
+             Device 1 Queue   = [ ]
+
+
+Average Waiting Time: 110 
+Average Turnaround Time: 860

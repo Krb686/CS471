@@ -1,0 +1,16 @@
+
+/* Input file for a system with only one ready queue and 
+Round Robin Policy */
+
+Time Quantum 1: 100
+
+Process ID: 1
+Arrival time: 0 
+CPU burst: 130
+I/O burst: 200
+I/O device id: 1
+CPU burst: 50
+I/O burst: 120
+I/O device id: 2
+
+
