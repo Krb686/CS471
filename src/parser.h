@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 typedef struct CPUburst{
   int length; struct CPUburst *next;
 }CPUburstR, *CPUburstP;
@@ -14,10 +10,6 @@ typedef struct process{
   int pid; int aTime; CPUburstP CPU; IOburstP IO;
   int status; struct process *next; struct process *prev;
 }processR, *processP;
-
-//typedef struct RRqueue{
-//  int tQ, processP first; processP last;
-//}
 
 processP parser(char*);
 processP insertP(processP,int);
