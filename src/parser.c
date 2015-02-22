@@ -62,11 +62,12 @@ processP parser(char* fName){
 
 processP insertP(processP p, int pid){
   processP t=(processP)malloc(sizeof(processR));
-  t->prev = p;
+  processP end = lastP(p);
+  t->prev = end;
   t->pid = pid;
   t->next = NULL;
-  if(p!=NULL){
-    p->next = t;
+  if(end!=NULL){
+    end->next = t;
     return p;
   }
   return t;
@@ -74,10 +75,11 @@ processP insertP(processP p, int pid){
 
 CPUburstP insertCPU(CPUburstP p, int l){
   CPUburstP t=(CPUburstP)malloc(sizeof(CPUburstR));
+  CPUburstP end = lastCPU(p);
   t->length = l;
   t->next = NULL;
-  if(p!=NULL){
-    p->next = t;
+  if(end!=NULL){
+    end->next = t;
     return p;
   }
   return t;
@@ -85,10 +87,11 @@ CPUburstP insertCPU(CPUburstP p, int l){
 
 IOburstP insertIO(IOburstP p, int l){
   IOburstP t=(IOburstP)malloc(sizeof(IOburstR));
+  IOburstP end = lastIO(p);
   t->length = l;
   t->next = NULL;
-  if(p!=NULL){
-    p->next = t;
+  if(end!=NULL){
+    end->next = t;
     return p;
   }
   return t;

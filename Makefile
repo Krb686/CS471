@@ -1,10 +1,11 @@
-BUILDDIR = ./src
+SRC = ./src/
+BIN = ./bin/
 
-scheduler: $(BUILDDIR)/main.o $(BUILDIR)/parser.o
-	gcc -o scheduler main.o parser.o
+scheduler: $(BIN)main.o $(BIN)parser.o
+	gcc -o scheduler $(BIN)main.o $(BIN)parser.o
+
+$(BIN)main.o: $(SRC)main.c $(SRC)parser.h
+	gcc -c -o $(BIN)main.o $(SRC)main.c
 	
-main.o: $(BUILDDIR)/main.c $(BUILDDIR)/parser.h
-	gcc -c main.c
-	
-parser.o: $(BUILDDIR)/parser.c $(BUILDDIR)/parser.h
-	gcc -c parser.c
+$(BIN)parser.o: $(SRC)parser.c $(SRC)parser.h
+	gcc -c -o $(BIN)parser.o $(SRC)parser.c

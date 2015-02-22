@@ -15,6 +15,10 @@ typedef struct process{
   int status; struct process *next; struct process *prev;
 }processR, *processP;
 
+//typedef struct RRqueue{
+//  int tQ, processP first; processP last;
+//}
+
 processP parser(char*);
 processP insertP(processP,int);
 CPUburstP insertCPU(CPUburstP,int);
