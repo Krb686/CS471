@@ -8,7 +8,7 @@ typedef struct queue{
 #endif
 
 
-void demoteProcess(processP*);
+void demoteProcess(processP);
 /*typedef struct RRqueue{
   int tQ; processP head;
 }
