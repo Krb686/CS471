@@ -33,6 +33,7 @@ int main(int argc, char* argv[]){
   printf("tQ1: %d\ntQ2: %d\n", rObj->tQ1, rObj->tQ2);
   printf("Device count: %d\n", rObj->deviceCount);
   printf("Process count: %d\n", rObj->procCount);
+  printP(rObj->PID0);
 
 
   //While processes still remain 

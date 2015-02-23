@@ -27,8 +27,6 @@ typedef struct parserOutput{
   int deviceCount;
   int procCount;
 
-  CPUburstP CPU0;
-  IOburstP IO0;
   processP PID0;
 
 } ParserOutput;

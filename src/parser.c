@@ -54,13 +54,11 @@ ParserOutput* parser(char* fName){
       else if(strstr(line,"CPU burst: ")!=NULL){
         CPU0 = insertCPU(CPU0,atoi(line+11));
         pid9->CPU = CPU0;
-        rObj->CPU0 = CPU0;
       }
       else if(strstr(line,"I/O burst: ")!=NULL){
         IO0 = insertIO(IO0,atoi(line+11));
         IO9 = lastIO(IO0);
         pid9->IO = IO0;
-        rObj->IO0 = IO0;
       }
       else if(strstr(line,"I/O device id: ")!=NULL){
         IO9->devId=atoi(line+15);
