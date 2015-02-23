@@ -4,7 +4,7 @@
 #include "process.h"
 
 
-void demoteProcess(processP *process){
+void demoteProcess(processP process){
 
 
 

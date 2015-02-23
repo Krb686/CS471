@@ -11,7 +11,10 @@ int main(int argc, char* argv[]){
   ParserOutput *rObj = parser(argv[1]);
  
   //Currently executing process
-  processP *execProc;
+  processP execProc;
+
+  //Link to next un-queued process
+  processP nextProc = rObj->PID0;
 
   //Current time
   int currTime = 0;
@@ -37,20 +40,19 @@ int main(int argc, char* argv[]){
   while(remaining){
 
     //First, check arrivals
-    processP tempProc = rObj->PID0;
-    while(tempProc != NULL){
-      if(tempProc->aTime = currTime){
-        insertQ1(RR_Q1, tempProc);
+    while(nextProc != NULL){
+      if(nextProc->aTime == currTime){
+        insertQ1(RR_Q1, nextProc);
       }
     } 
   }
 }
 
-void insertQ1(QueueP RR_Q1, processP tempProc){
+void insertQ1(QueueP RR_Q1, processP nextProc){
   if(!RR_Q1->head){
-    RR_Q1->head = tempProc;
+    RR_Q1->head = nextProc;
   } else {
-    RR_Q1->head->next = tempProc;
+    RR_Q1->head->next = nextProc;
   }
 }
 /*
