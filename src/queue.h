@@ -4,7 +4,7 @@
 #define QUEUE_STRUCT
 typedef struct queue{
   int tQ; processP head;
-}Queue;
+}QueueR, *QueueP;
 #endif
 
 
