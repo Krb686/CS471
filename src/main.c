@@ -1,3 +1,4 @@
+#include "main.h"
 #include "parser.h"
 #include "queue.h"
 #include <stdio.h>
@@ -5,25 +6,27 @@
 
 int main(int argc, char* argv[]){
 
-  //Create time quantum variables to be returned from the parser
-  int *tQ1 = malloc(sizeof(int));
-  int *tQ2 = malloc(sizeof(int));
-
   //Call the parser 
   if(argc!=2){printf("Usage: %s filename\n",argv[0]); exit(2);}
-  processP test = parser(argv[1], tQ1, tQ2);
+  ParserOutput *rObj = parser(argv[1]);
  
   //Instantiate queues
-  Queue *Q1 = malloc(sizeof(Queue));
-  Queue *Q2 = malloc(sizeof(Queue));
-  Queue *Q3 = malloc(sizeof(Queue));
+  Queue *RR_Q1 = malloc(sizeof(Queue));
+  Queue *RR_Q2 = malloc(sizeof(Queue));
+  Queue *SRTF_Q3 = malloc(sizeof(Queue));
 
   //Setup queues
-  Q1->tQ = *tQ1;
-  Q2->tQ = *tQ2;
-  Q3->tQ = 0;
+  RR_Q1->tQ = rObj->tQ1;
+  RR_Q2->tQ = rObj->tQ2;
+  SRTF_Q3->tQ = 0;
 
-  Q1->head = test;  
+  RR_Q1->head = rObj->PID0; 
+
+  //printOutput(rObj); 
+  printf("tQ1: %d\ntQ2: %d\n", rObj->tQ1, rObj->tQ2);
+  printf("Device count: %d\n", rObj->deviceCount);
+  printf("Process count: %d\n", rObj->procCount);
+
 
   //While processes still remain 
   int remaining = 0;
@@ -32,6 +35,14 @@ int main(int argc, char* argv[]){
   }
 }
 
+/*
+void printOutput(ParserObject rObj){
+
+  printf("tQ1: %d\ntQ2: %d\n", rObj->tQ1, rObj->tQ2);
+
+
+}
+*/
 
 //int count(processP){
 //  

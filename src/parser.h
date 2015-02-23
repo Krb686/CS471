@@ -20,7 +20,21 @@ typedef struct process{
 }processR, *processP;
 #endif
 
-processP parser(char*, int*, int*);
+#ifndef PARSEROUTPUT_STRUCT
+#define PARSEROUTPUT_STRUCT
+typedef struct parserOutput{
+  int tQ1, tQ2;
+  int deviceCount;
+  int procCount;
+
+  CPUburstP CPU0;
+  IOburstP IO0;
+  processP PID0;
+
+} ParserOutput;
+#endif
+
+ParserOutput* parser(char*);
 processP insertP(processP,int);
 CPUburstP insertCPU(CPUburstP,int);
 IOburstP insertIO(IOburstP,int);

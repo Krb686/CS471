@@ -6,18 +6,18 @@
 
 
 //COMMENTS
-// tQ1 and tQ2 are only visible inside parser.c
-// they need to be accessible in main, where the queues are being instantiated
-// these can either be returned: 
-//    - byRef (pointer)
-//    - through a tuple or struct
-// currently setup to return byRef
-// it makes more logical sense to me to return through a struct though, 
-// because I view each module as a machine that outputs a nicely packaged object
-// so a struct called "processInfo" or something like that that contains
-// all the necessary information required in main could be setup,
-// but I didn't want to change your parser too much
-processP parser(char* fName, int* tQ1, int* tQ2){
+// Alot of the information in here needs to be available in main
+// such as device count, process count, etc
+// We could either return a bunch of information by reference,
+// or just return a nicely packaged struct.  I decided option 2.
+// Compile and run the test cases and you'll see it still works.
+// This way, we can return anything else we might need just by 
+// adding it into the "ParserOutput" struct
+
+ParserOutput* parser(char* fName){
+
+  ParserOutput *rObj = malloc(sizeof(ParserOutput));
+
   FILE *inFileP;
   char* line;
   char* seek;
@@ -35,16 +35,18 @@ processP parser(char* fName, int* tQ1, int* tQ2){
       line++; *line = '\0'; line--;
       line -= sizeof(char)*i;
       if(strstr(line,"Time Quantum 1: ")!=NULL){
-        *tQ1=atoi(line+16);
+        rObj->tQ1=atoi(line+16);
       }
       else if(strstr(line,"Time Quantum 2: ")!=NULL){
-        *tQ2=atoi(line+16);
+        rObj->tQ2=atoi(line+16);
       }
       else if(strstr(line,"Process ID: ")!=NULL){
         pid0 = insertP(pid0,atoi(line+12));
         pid9 = lastP(pid0);
         CPU0 = NULL;
         IO0 = NULL;
+        rObj->procCount++;
+        rObj->PID0 = pid0;
       }
       else if(strstr(line,"Arrival time: ")!=NULL){
         pid9->aTime=atoi(line+14);
@@ -52,14 +54,17 @@ processP parser(char* fName, int* tQ1, int* tQ2){
       else if(strstr(line,"CPU burst: ")!=NULL){
         CPU0 = insertCPU(CPU0,atoi(line+11));
         pid9->CPU = CPU0;
+        rObj->CPU0 = CPU0;
       }
       else if(strstr(line,"I/O burst: ")!=NULL){
         IO0 = insertIO(IO0,atoi(line+11));
         IO9 = lastIO(IO0);
         pid9->IO = IO0;
+        rObj->IO0 = IO0;
       }
       else if(strstr(line,"I/O device id: ")!=NULL){
         IO9->devId=atoi(line+15);
+        rObj->deviceCount++;
       }
       i = 0;
     }
@@ -68,10 +73,11 @@ processP parser(char* fName, int* tQ1, int* tQ2){
       i++;
     }
   }
-  printf("tq1:%d,tq2:%d\n\n",*tQ1,*tQ2);
   free(line);
   fclose(inFileP);
-  return pid0;
+
+  return rObj;
+  //return pid0;
 }
 
 processP insertP(processP p, int pid){
