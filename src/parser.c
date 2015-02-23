@@ -9,8 +9,13 @@
 // they need to be accessible in main, where the queues are being instantiated
 // these can either be returned: 
 //    - byRef (pointer)
-//    - through a tuple
+//    - through a tuple or struct
 // currently setup to return byRef
+// it makes more logical sense to me to return through a struct though, 
+// because I view each module as a machine that outputs a nicely packaged object
+// so a struct called "processInfo" or something like that that contains
+// all the necessary information required in main could be setup,
+// but I didn't want to change your parser too much
 processP parser(char* fName, int* tQ1, int* tQ2){
   FILE *inFileP;
   char* line;

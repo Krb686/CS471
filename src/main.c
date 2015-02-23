@@ -20,11 +20,10 @@ int main(int argc, char* argv[]){
 
   //Setup queues
   RRq1->tQ = *tQ1;
-  RRq1->head = test;
-
   RRq2->tQ = *tQ2;
+  SRTFq->tQ = 0;
 
-  SRTFq->tQ = 0;  
+  RRq1->head = test;  
 
   //While processes still remain 
   int remaining = 0;
@@ -32,6 +31,7 @@ int main(int argc, char* argv[]){
     
   }
 }
+
 
 //int count(processP){
 //  
