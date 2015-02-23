@@ -1,10 +1,10 @@
-#include "parser.h"
-
+#ifndef QUEUE_STRUCT
+#define QUEUE_STRUCT
 typedef struct queue{
   int tQ; processP head;
-}
-
-typedef struct RRqueue{
+}Queue;
+#endif
+/*typedef struct RRqueue{
   int tQ; processP head;
 }
 
@@ -15,3 +15,4 @@ typedef struct SRTFqueue{
 typedef struct FCFSqueue{
   processP head;
 }
+*/

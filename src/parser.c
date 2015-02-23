@@ -1,14 +1,22 @@
+#include "parser.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "parser.h"
 
-processP parser(char* fName){
+
+//COMMENTS
+// tQ1 and tQ2 are only visible inside parser.c
+// they need to be accessible in main, where the queues are being instantiated
+// these can either be returned: 
+//    - byRef (pointer)
+//    - through a tuple
+// currently setup to return byRef
+processP parser(char* fName, int* tQ1, int* tQ2){
   FILE *inFileP;
   char* line;
   char* seek;
   char* lines[100];
-  int i=0,j=0,tQ1=0,tQ2=0,pidI=0;
+  int i=0,j=0,pidI=0;
   processP pid0=NULL,pid9=NULL;
   CPUburstP CPU0=NULL,CPU9=NULL;
   IOburstP IO0=NULL,IO9=NULL;
@@ -21,10 +29,10 @@ processP parser(char* fName){
       line++; *line = '\0'; line--;
       line -= sizeof(char)*i;
       if(strstr(line,"Time Quantum 1: ")!=NULL){
-        tQ1=atoi(line+16);
+        *tQ1=atoi(line+16);
       }
       else if(strstr(line,"Time Quantum 2: ")!=NULL){
-        tQ2=atoi(line+16);
+        *tQ2=atoi(line+16);
       }
       else if(strstr(line,"Process ID: ")!=NULL){
         pid0 = insertP(pid0,atoi(line+12));
@@ -54,7 +62,7 @@ processP parser(char* fName){
       i++;
     }
   }
-  printf("tq1:%d,tq2:%d\n\n",tQ1,tQ2);
+  printf("tq1:%d,tq2:%d\n\n",*tQ1,*tQ2);
   free(line);
   fclose(inFileP);
   return pid0;
@@ -128,5 +136,7 @@ void printP(processP p){
     }
     printf("\n");
     printP(p->next);
+ } else {
+   printf("\nERROR\n");
  }
 }
