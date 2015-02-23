@@ -19,7 +19,5 @@ void printP(processP p){
     }
     printf("\n");
     printP(p->next);
- } else {
-   printf("\nERROR\n");
- }
+  }
 }
