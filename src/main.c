@@ -14,16 +14,16 @@ int main(int argc, char* argv[]){
   processP test = parser(argv[1], tQ1, tQ2);
  
   //Instantiate queues
-  Queue *RRq1 = malloc(sizeof(Queue));
-  Queue *RRq2 = malloc(sizeof(Queue));
-  Queue *SRTFq = malloc(sizeof(Queue));
+  Queue *Q1 = malloc(sizeof(Queue));
+  Queue *Q2 = malloc(sizeof(Queue));
+  Queue *Q3 = malloc(sizeof(Queue));
 
   //Setup queues
-  RRq1->tQ = *tQ1;
-  RRq2->tQ = *tQ2;
-  SRTFq->tQ = 0;
+  Q1->tQ = *tQ1;
+  Q2->tQ = *tQ2;
+  Q3->tQ = 0;
 
-  RRq1->head = test;  
+  Q1->head = test;  
 
   //While processes still remain 
   int remaining = 0;
