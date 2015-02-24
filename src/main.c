@@ -59,23 +59,10 @@ int main(int argc, char* argv[]){
     if(nextProc != NULL && nextProc->aTime == clk){
       printf("\nTime = %d:\t",clk);
     }
-    //First, check arrivals
-    while(nextProc != NULL && nextProc->aTime == clk){
-      printf("Process %d arrives\n\t\t",nextProc->pid);
-      printf("Process %d requests CPU\n\t\t",nextProc->pid);
-      insertQ(RR_Q1, nextProc);
-      nextProc = nextProc->next;// nextProc = nP // nP->prev = P
-      if(nextProc!=NULL){
-        nextProc->prev->next = NULL;// q: ...->|P|->NULL
-        nextProc->prev = NULL;// nP->prev = NULL
-      }
-      printf("Ready Queue Q1 = ");
-      printQueue(RR_Q1);//prints [Process x, Process x+1,...]\n
-      if(nextProc != NULL && nextProc->aTime == clk){
-        printf("\t\t");
-      }
-      remaining--;//will delete
-    }
+
+    //First check arrivals
+    checkArrivals(&RR_Q1, &nextProc, &clk);
+    
     //check if execProc should be preempted
     if(execProc!=NULL){
       int runningTime = clk - execProc->aTime - execProc->wTime;
@@ -244,6 +231,28 @@ int main(int argc, char* argv[]){
     }
     clk++;
     if(clk==1000){printf("Timeout\n");remaining = 0;}//will delete
+  }
+}
+
+void checkArrivals(QueueP *RR_Q1P, processP *nextProcP, int *clkP){
+  while(*nextProcP != NULL && (*nextProcP)->aTime == *clkP){
+    printf("Process %d arrives\n\t\t", (*nextProcP)->pid);
+    printf("Process %d requests CPU\n\t\t", (*nextProcP)->pid);
+    
+    insertQ(*RR_Q1P, *nextProcP);
+    *nextProcP = (*nextProcP)->next;// nextProc = nP // nP->prev = P
+      
+    if(*nextProcP!=NULL){
+      (*nextProcP)->prev->next = NULL;// q: ...->|P|->NULL
+      (*nextProcP)->prev = NULL;// nP->prev = NULL
+    }
+      
+    printf("Ready Queue Q1 = ");
+    printQueue(*RR_Q1P);//prints [Process x, Process x+1,...]\n
+      
+    if(*nextProcP != NULL && (*nextProcP)->aTime == *clkP){
+      printf("\t\t");
+    }
   }
 }
 
