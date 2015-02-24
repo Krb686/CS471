@@ -74,7 +74,6 @@ int main(int argc, char* argv[]){
       if(nextProc != NULL && nextProc->aTime == clk){
         printf("\t\t");
       }
-      remaining--;//will delete
     }
     //check if execProc should be preempted
     if(execProc!=NULL){
@@ -97,6 +96,36 @@ int main(int argc, char* argv[]){
             case 5: insertQ(IO_Q5, execProc); printQueue(IO_Q5);  break;
             default: printf("invalid devId!\n");
           }
+          execProc = NULL;
+        }
+        else if(clk - execProc->rTime - execProc->wTime - execProc->aTime == execProc->CPU->length){
+          execProc->rTime += execProc->CPU->length;
+          execProc->CPU = removeCPUburst(execProc->CPU);
+          printf("\nTime = %d:\t",clk);
+          printf("CPU burst of Process %d completes\n",execProc->pid);
+          printf("\t\tProcess %d requests I/O",execProc->pid);
+          printf(" on Device %d\n",execProc->IO->devId);
+          printf("\t\tDevice %d Queue = ",execProc->IO->devId);
+          execProc->status = WAIT;
+          switch(execProc->IO->devId){
+            case 1: insertQ(IO_Q1, execProc); printQueue(IO_Q1);  break;
+            case 2: insertQ(IO_Q2, execProc); printQueue(IO_Q2);  break;
+            case 3: insertQ(IO_Q3, execProc); printQueue(IO_Q3);  break;
+            case 4: insertQ(IO_Q4, execProc); printQueue(IO_Q4);  break;
+            case 5: insertQ(IO_Q5, execProc); printQueue(IO_Q5);  break;
+            default: printf("invalid devId!\n");
+          }
+          execProc = NULL;
+        }
+        else if(clk - execProc->rTime - execProc->wTime - execProc->aTime == RR_Q1->tQ){//demote to q2
+          execProc->rTime += RR_Q1->tQ;
+          execProc->CPU->length -= RR_Q1->tQ;
+          printf("\nTime = %d:\tProcess %d is preempted\n",clk,execProc->pid);
+          printf("\t\tProcess %d is demoted to Ready Queue Q2\n",execProc->pid);
+          insertQ(RR_Q2,execProc);
+          execProc->status = READY;
+          printf("\t\tReady Queue Q2 = ");
+          printQueue(RR_Q2);//prints [Process x, Process x+1,...]\n
           execProc = NULL;
         }
         else if(runningTime == RR_Q1->tQ){//demote to q2
@@ -129,6 +158,36 @@ int main(int argc, char* argv[]){
             case 5: insertQ(IO_Q5, execProc); printQueue(IO_Q5);  break;
             default: printf("invalid devId!\n");
           }
+          execProc = NULL;
+        }
+        else if(clk - execProc->rTime - execProc->wTime - execProc->aTime == execProc->CPU->length){
+          execProc->rTime += execProc->CPU->length;
+          execProc->CPU = removeCPUburst(execProc->CPU);
+          printf("\nTime = %d:\t",clk);
+          printf("CPU burst of Process %d completes\n",execProc->pid);
+          printf("\t\tProcess %d requests I/O",execProc->pid);
+          printf(" on Device %d\n",execProc->IO->devId);
+          printf("\t\tDevice %d Queue = ",execProc->IO->devId);
+          execProc->status = WAIT;
+          switch(execProc->IO->devId){
+            case 1: insertQ(IO_Q1, execProc); printQueue(IO_Q1);  break;
+            case 2: insertQ(IO_Q2, execProc); printQueue(IO_Q2);  break;
+            case 3: insertQ(IO_Q3, execProc); printQueue(IO_Q3);  break;
+            case 4: insertQ(IO_Q4, execProc); printQueue(IO_Q4);  break;
+            case 5: insertQ(IO_Q5, execProc); printQueue(IO_Q5);  break;
+            default: printf("invalid devId!\n");
+          }
+          execProc = NULL;
+        }
+        else if(clk - execProc->rTime - execProc->wTime - execProc->aTime == RR_Q2->tQ){//demote to q2
+          execProc->rTime += RR_Q2->tQ;
+          execProc->CPU->length -= RR_Q2->tQ;
+          printf("\nTime = %d:\tProcess %d is preempted\n",clk,execProc->pid);
+          printf("\t\tProcess %d is demoted to Ready Queue Q3\n",execProc->pid);
+          insertQ(SRTF_Q3,execProc);
+          execProc->status = READY;
+          printf("\t\tReady Queue Q3 = ");
+          printQueue(SRTF_Q3);//prints [Process x, Process x+1,...]\n
           execProc = NULL;
         }
         else if(runningTime == RR_Q1->tQ + RR_Q2->tQ){
@@ -167,9 +226,9 @@ int main(int argc, char* argv[]){
     //Place code to run IO devices
     if(IO_Q1->head!=NULL){
       processP IOp = IO_Q1->head;
-      int IOtime = clk - IOp->wTime - IOp->rTime;
+      int IOtime = clk - IOp->wTime - IOp->rTime - IOp->aTime;
       if(IOtime == IOp->IO->length && IOp->status == IOEX){
-        IOp->rTime += IOtime;
+        IOp->rTime += IOtime-IOp->aTime;
         IOp->IO = removeIOburst(IOp->IO);
         printf("\nTime = %d:\t",clk);
         printf("I/O burst of Process %d completes\n",IOp->pid);
@@ -180,21 +239,8 @@ int main(int argc, char* argv[]){
         printf("\t\tProcess %d requests CPU\n",IOp->pid);
         printf("\t\tReady Queue Q1 = "); printQueue(RR_Q1);
         IOp = IO_Q1->head;
-        //printf("\t\tReady Queue Q1 = ");
-        //printQueue(RQ_Q1);
-        
-        //if(IOp->CPU!=NULL){
-        //  IOp->status = READY;
-        //  insertQ(RR_Q1,IOp);
-        //}
-        //execProc->wTime = clk - execProc->aTime - execProc->rTime;
-
-        //printf("\t\tProcess %d requests I/O",execProc->pid);
-        //printf(" on Device %d\n",execProc->IO->devId);
-        //printf("\t\tDevice %d Queue = ",execProc->IO->devId);
-        //execProc->status = WAIT;
       }
-      if(IOp->status==WAIT){
+      if(IOp != NULL && IOp->status==WAIT){
         IOp->status = IOEX;
         IOp->wTime = clk - IOp->aTime - IOp->rTime;
         printf("\t\tI/O Device 1 now in use by Process %d\n",IOp->pid);
