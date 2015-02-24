@@ -1,3 +1,11 @@
+#define READY	1
+#define	RUNQ1	2
+#define RUNQ2	3
+#define RUNQ3	4
+#define IO	5
+#define WAIT	6
+#define DONE	7
+
 #ifndef CPUBURST_STRUCT
 #define CPUBURST_STRUCT
 typedef struct CPUburst{

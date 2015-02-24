@@ -68,23 +68,34 @@ int main(int argc, char* argv[]){
       remaining--;//will delete
     }
     //check if execProc should be preempted
-    if(execProc!=NULL &&
-       clk - execProc->aTime - execProc->wTime == RR_Q1->tQ){
-      execProc->rTime = RR_Q1->tQ;
-      printf("\nTime = %d:\tProcess %d is preempted\n",clk,execProc->pid);
-      printf("\t\tProcess %d is demoted to Ready Queue Q2\n",execProc->pid);
-      insertRR(RR_Q2,execProc);
-      printf("\t\tReady Queue Q2 = ");
-      printQueue(RR_Q2);//prints [Process x, Process x+1,...]\n
-      execProc = NULL;
-    }
-    if(clk!=0 && clk % RR_Q2->tQ == 0){
-      printf("bump3");
+    if(execProc!=NULL){
+      int runningTime = clk - execProc->aTime -execProc->wTime;
+      if(execProc->status == RUNQ1 && runningTime == RR_Q1->tQ){
+        execProc->rTime = RR_Q1->tQ;
+        printf("\nTime = %d:\tProcess %d is preempted\n",clk,execProc->pid);
+        printf("\t\tProcess %d is demoted to Ready Queue Q2\n",execProc->pid);
+        insertRR(RR_Q2,execProc);
+        execProc->status = READY;
+        printf("\t\tReady Queue Q2 = ");
+        printQueue(RR_Q2);//prints [Process x, Process x+1,...]\n
+        execProc = NULL;
+      }
+      else if(execProc->status == RUNQ2 && runningTime == RR_Q2->tQ){
+        execProc->rTime = RR_Q2->tQ;
+        printf("\nTime = %d:\tProcess %d is preempted\n",clk,execProc->pid);
+        printf("\t\tProcess %d is demoted to Ready Queue Q3\n",execProc->pid);
+        insertSRTF(SRTF_Q3,execProc);
+        execProc->status = READY;
+        printf("\t\tReady Queue Q3 = ");
+        printQueue(RR_Q3);//prints [Process x, Process x+1,...]\n
+        execProc = NULL;
+      }
     }
     //Next dispatch process to running state
     if(execProc==NULL){
       if(RR_Q1->head!=NULL){
         execProc = dispatch(RR_Q1);
+        execProc->status = RUNQ1;
         execProc->wTime = clk - execProc->aTime - execProc->rTime;
         printf("\t\tDispatcher moves Process %d to Running State\n",execProc->pid);
         printf("\t\tReady Queue Q1 = ");
@@ -92,7 +103,13 @@ int main(int argc, char* argv[]){
         printf("\t\tProcess %d starts running\n",execProc->pid);
       }
       else if(RR_Q2->head!=NULL){
-        printf("|");
+        execProc = dispatch(RR_Q2);
+        execProc->status = RUNQ2;
+        execProc->wTime = clk - execProc->aTime - execProc->rTime;
+        printf("\t\tDispatcher moves Process %d to Running State\n",execProc->pid);
+        printf("\t\tReady Queue Q2 = ");
+        printQueue(RR_Q1);
+        printf("\t\tProcess %d starts running\n",execProc->pid);
       }
       else if(SRTF_Q3->head!=NULL){
         printf("bump2");
@@ -111,6 +128,29 @@ void insertRR(QueueP RR_Q, processP p){
     processP qTail = lastP(RR_Q->head);// last = lP // q: ...->|lP|->NULL
     qTail->next = p;// q: ...->|lP|->|P|->|nP|->... // nextProc = P
     p->prev = qTail;
+  }
+}
+
+void insertSRTF(QueueP SRTF_Q, processP p){
+  if(SRTF_Q->head==NULL){
+    SRTF_Q->head = p;
+  }
+  else{
+    processP i = lastP(SRTF_Q->head);
+    while(i!=NULL && p->CPU->length < i->CPU->length){
+      i = i->prev;
+    }
+    if(i==NULL){
+      p->next = SRTF_Q->head
+      SRTF_Q->head = p;
+      p->next->prev = p;
+    }
+    else{
+    p->next = i->next;
+    i->next->prev = p;
+    i->next = p;
+    p->prev = i;
+    }
   }
 }
 
@@ -134,7 +174,6 @@ processP dispatch(QueueP q){//q->head should never be null
   }
   q->head = q->head->next;//q2=newqh
   t->next = NULL;//oldqh->next != newqh
-  t->status = RUN;
   return t;
 }
 
