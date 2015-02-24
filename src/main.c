@@ -146,10 +146,12 @@ void insertSRTF(QueueP SRTF_Q, processP p){
       p->next->prev = p;
     }
     else{
-    p->next = i->next;
-    i->next->prev = p;
-    i->next = p;
-    p->prev = i;
+      p->next = i->next;
+      if(i->next!=NULL){
+        i->next->prev = p;
+      }
+      i->next = p;
+      p->prev = i;
     }
   }
 }
