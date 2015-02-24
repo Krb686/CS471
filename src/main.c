@@ -172,13 +172,17 @@ int main(int argc, char* argv[]){
         IOp->rTime += IOtime;
         IOp->IO = removeIOburst(IOp->IO);
         printf("\nTime = %d:\t",clk);
-        printf("I/O burst of Process %d completes\n",execProc->pid);
-        nextProc = dispatch(IO_Q1);
-        printf("Device 1 Queue = ");
-        printQueue(IO_Q1);
-        //I'm too tired to understand...
-        //I think this IO stuff needs to happen before the arrivals
-        //because if an IO finishes it essentially causes an arrival right?
+        printf("I/O burst of Process %d completes\n",IOp->pid);
+        IOp = dispatch(IO_Q1);
+        insertQ(RR_Q1,IOp);//***check if done
+        printf("\t\tDevice 1 Queue = "); printQueue(IO_Q1);
+        IOp->status = READY;
+        printf("\t\tProcess %d requests CPU\n",IOp->pid);
+        printf("\t\tReady Queue Q1 = "); printQueue(RR_Q1);
+        IOp = IO_Q1->head;
+        //printf("\t\tReady Queue Q1 = ");
+        //printQueue(RQ_Q1);
+        
         //if(IOp->CPU!=NULL){
         //  IOp->status = READY;
         //  insertQ(RR_Q1,IOp);
@@ -239,7 +243,7 @@ int main(int argc, char* argv[]){
       }
     }
     clk++;
-    if(clk==500){remaining--;printf("Timeout\n");}//will delete
+    if(clk==1000){printf("Timeout\n");remaining = 0;}//will delete
   }
 }
 
@@ -305,9 +309,9 @@ void printQueue(QueueP RR_Q){
   processP i = RR_Q->head;
   printf("[");
   while(i!=NULL){
-    printf("Process %d",i->pid);
+    printf("%d: rT=%d wT=%d s=%d",i->pid,i->rTime,i->wTime,i->status);
     if(i->next!=NULL){
-      printf(", ");
+      printf(" | ");
     }
     i = i->next;
   }
