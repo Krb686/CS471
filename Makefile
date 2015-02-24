@@ -2,10 +2,10 @@ SRC = ./src/
 BIN = ./bin/
 
 scheduler: $(BIN)main.o $(BIN)parser.o $(BIN)process.o $(BIN)queue.o $(BIN)device.o
-	gcc -o scheduler $(BIN)main.o $(BIN)parser.o $(BIN)process.o $(BIN)queue.o $(BIN)device.o
+	gcc -g -o scheduler $(BIN)main.o $(BIN)parser.o $(BIN)process.o $(BIN)queue.o $(BIN)device.o
 
-$(BIN)main.o: $(SRC)main.c $(SRC)main.h $(SRC)parser.h $(SRC)queue.h
-	gcc -c -o $(BIN)main.o $(SRC)main.c
+$(BIN)main.o: $(SRC)main.c $(SRC)main.h $(SRC)parser.h $(SRC)queue.h $(SRC)process.h
+	gcc -g -c -o $(BIN)main.o $(SRC)main.c
 	
 $(BIN)parser.o: $(SRC)parser.c $(SRC)parser.h $(SRC)process.h
 	gcc -c -o $(BIN)parser.o $(SRC)parser.c

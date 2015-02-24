@@ -14,9 +14,9 @@
 // This way, we can return anything else we might need just by 
 // adding it into the "ParserOutput" struct
 
-ParserOutput* parser(char* fName){
+ParserOutputP parser(char* fName){
 
-  ParserOutput *rObj = malloc(sizeof(ParserOutput));
+  ParserOutputP rObj = malloc(sizeof(ParserOutputR));
 
   FILE *inFileP;
   char* line;
@@ -62,7 +62,6 @@ ParserOutput* parser(char* fName){
       }
       else if(strstr(line,"I/O device id: ")!=NULL){
         IO9->devId=atoi(line+15);
-        rObj->deviceCount++;
       }
       i = 0;
     }
