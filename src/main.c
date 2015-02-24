@@ -38,14 +38,35 @@ int main(int argc, char* argv[]){
   //Setup queues
   RR_Q1->tQ = rObj->tQ1;
   RR_Q1->head = NULL;
+  RR_Q1->qNum = 1;
+
   RR_Q2->tQ = rObj->tQ2;
   RR_Q2->head = NULL;
+  RR_Q2->qNum = 2;
+
+  SRTF_Q3->tQ = 0;
   SRTF_Q3->head = NULL;
+  SRTF_Q3->qNum = 3;
+
+  IO_Q1->tQ = 0;
   IO_Q1->head = NULL;
+  IO_Q1->qNum = 4;
+
+  IO_Q2->tQ = 0;
   IO_Q2->head = NULL;
+  IO_Q2->qNum = 5;
+
+  IO_Q3->tQ = 0;
   IO_Q3->head = NULL;
+  IO_Q3->qNum = 6;
+
+  IO_Q4->tQ = 0;
   IO_Q4->head = NULL;
+  IO_Q4->qNum = 7;
+
+  IO_Q5->tQ = 0;
   IO_Q5->head = NULL;
+  IO_Q5->qNum = 8;
 
   //printOutput(rObj); 
   printf("tQ1: %d\ntQ2: %d\n", rObj->tQ1, rObj->tQ2);
@@ -287,36 +308,18 @@ int main(int argc, char* argv[]){
     if(IO_Q5->head!=NULL){
 
     }
-    //Next dispatch process to running state
-    if(execProc==NULL){
-      if(RR_Q1->head!=NULL){
-        execProc = dispatch(RR_Q1);
-        execProc->status = RUNQ1;
-        execProc->wTime = clk - execProc->aTime - execProc->rTime;
-        printf("\t\tDispatcher moves Process %d to Running State\n",execProc->pid);
-        printf("\t\tReady Queue Q1 = ");
-        printQueue(RR_Q1);
-        printf("\t\tProcess %d starts running\n",execProc->pid);
-      }
-      else if(RR_Q2->head!=NULL){
-        execProc = dispatch(RR_Q2);
-        execProc->status = RUNQ2;
-        execProc->wTime = clk - execProc->aTime - execProc->rTime;
-        printf("\t\tDispatcher moves Process %d to Running State\n",execProc->pid);
-        printf("\t\tReady Queue Q2 = ");
-        printQueue(RR_Q2);
-        printf("\t\tProcess %d starts running\n",execProc->pid);
-      }
-      else if(SRTF_Q3->head!=NULL){
-        execProc = dispatch(SRTF_Q3);
-        execProc->status = RUNQ3;
-        execProc->wTime = clk - execProc->aTime - execProc->rTime;
-        printf("\t\tDispatcher moves Process %d to Running State\n",execProc->pid);
-        printf("\t\tReady Queue Q3 = ");
-        printQueue(SRTF_Q3);
-        printf("\t\tProcess %d starts running\n",execProc->pid);
+    
+    //Dispatch processes from their queues to the processor
+    if(execProc == NULL){
+      if(RR_Q1->head != NULL){
+        dispatchProcsFromQueue(&execProc, &RR_Q1, &clk);
+      } else if(RR_Q2 != NULL){
+        dispatchProcsFromQueue(&execProc, &RR_Q2, &clk);
+      } else if(SRTF_Q3 != NULL){
+        dispatchProcsFromQueue(&execProc, &SRTF_Q3, &clk);
       }
     }
+ 
     clk++;
     if(clk==1000){printf("Timeout\n");remaining = 0;}//will delete
   }
@@ -324,6 +327,28 @@ int main(int argc, char* argv[]){
   free(IO_Q1); free(IO_Q2); free(IO_Q3); free(IO_Q4); free(IO_Q5);
   printf("\n\nAverage Waiting Time: %d\n",totalwTime/rObj->procCount);
   printf("Average Turnaround Time: %d\n",totalrTime/rObj->procCount);
+}
+
+void dispatchProcsFromQueue(processP *execProcP, QueueP *queueP, int *clkP){
+  //Next dispatch process to running state
+    if((*queueP)->head!=NULL){
+      
+      *execProcP = dispatch(*queueP);
+
+      if((*queueP)->qNum = 1){
+        (*execProcP)->status = RUNQ1;
+      } else if((*queueP)->qNum = 2){
+        (*execProcP)->status = RUNQ2;
+      } else if((*queueP)->qNum = 3){
+        (*execProcP)->status = RUNQ3;
+      }
+
+      (*execProcP)->wTime = *clkP - (*execProcP)->aTime - (*execProcP)->rTime;
+      printf("\t\tDispatcher moves Process %d to Running State\n", (*execProcP)->pid);
+      printf("\t\tReady Queue Q1 = ");
+      printQueue(*queueP);
+      printf("\t\tProcess %d starts running\n", (*execProcP)->pid);
+    }
 }
 
 void checkArrivals(QueueP *RR_Q1P, processP *nextProcP, int *clkP){
