@@ -2,7 +2,7 @@
 #define	RUNQ1	2
 #define RUNQ2	3
 #define RUNQ3	4
-#define IO	5
+#define IOQ	5
 #define WAIT	6
 #define DONE	7
 

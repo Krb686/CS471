@@ -87,7 +87,7 @@ int main(int argc, char* argv[]){
         insertSRTF(SRTF_Q3,execProc);
         execProc->status = READY;
         printf("\t\tReady Queue Q3 = ");
-        printQueue(RR_Q3);//prints [Process x, Process x+1,...]\n
+        printQueue(SRTF_Q3);//prints [Process x, Process x+1,...]\n
         execProc = NULL;
       }
     }
@@ -141,7 +141,7 @@ void insertSRTF(QueueP SRTF_Q, processP p){
       i = i->prev;
     }
     if(i==NULL){
-      p->next = SRTF_Q->head
+      p->next = SRTF_Q->head;
       SRTF_Q->head = p;
       p->next->prev = p;
     }
