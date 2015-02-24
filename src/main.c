@@ -80,7 +80,7 @@ int main(int argc, char* argv[]){
         printQueue(RR_Q2);//prints [Process x, Process x+1,...]\n
         execProc = NULL;
       }
-      else if(execProc->status == RUNQ2 && runningTime == RR_Q2->tQ){
+      else if(execProc->status == RUNQ2 && runningTime == RR_Q1->tQ + RR_Q2->tQ){
         execProc->rTime = RR_Q2->tQ;
         printf("\nTime = %d:\tProcess %d is preempted\n",clk,execProc->pid);
         printf("\t\tProcess %d is demoted to Ready Queue Q3\n",execProc->pid);
@@ -108,7 +108,7 @@ int main(int argc, char* argv[]){
         execProc->wTime = clk - execProc->aTime - execProc->rTime;
         printf("\t\tDispatcher moves Process %d to Running State\n",execProc->pid);
         printf("\t\tReady Queue Q2 = ");
-        printQueue(RR_Q1);
+        printQueue(RR_Q2);
         printf("\t\tProcess %d starts running\n",execProc->pid);
       }
       else if(SRTF_Q3->head!=NULL){
