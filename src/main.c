@@ -52,9 +52,10 @@ int main(int argc, char* argv[]){
   printf("Process count: %d\n", rObj->procCount);
   printP(rObj->PID0);
 
+  int totalrTime = 0, totalwTime = 0;
 
   //While processes still remain 
-  int remaining = 3;//rObj->procCount;
+  int remaining = rObj->procCount;
   while(remaining){
     if(nextProc != NULL && nextProc->aTime == clk){
       printf("\nTime = %d:\t",clk);
@@ -220,11 +221,22 @@ int main(int argc, char* argv[]){
         printf("\nTime = %d:\t",clk);
         printf("I/O burst of Process %d completes\n",IOp->pid);
         IOp = dispatch(IO_Q1);
-        insertQ(RR_Q1,IOp);//***check if done
-        printf("\t\tDevice 1 Queue = "); printQueue(IO_Q1);
-        IOp->status = READY;
-        printf("\t\tProcess %d requests CPU\n",IOp->pid);
-        printf("\t\tReady Queue Q1 = "); printQueue(RR_Q1);
+        if(IOp->IO == NULL){
+          printf("\t\tProcess %d completes\n",IOp->pid);
+          IOp->status = DONE;
+          totalrTime += IOp->rTime;
+          totalwTime += IOp->wTime;
+          free(IOp);
+          remaining--;
+          printf("\t\tDevice 1 Queue = "); printQueue(IO_Q1);
+        }
+        else{
+          insertQ(RR_Q1,IOp);//***check if done
+          IOp->status = READY;
+          printf("\t\tDevice 1 Queue = "); printQueue(IO_Q1);
+          printf("\t\tProcess %d requests CPU\n",IOp->pid);
+          printf("\t\tReady Queue Q1 = "); printQueue(RR_Q1);
+        }
         IOp = IO_Q1->head;
       }
       if(IOp != NULL && IOp->status==WAIT){
@@ -234,7 +246,37 @@ int main(int argc, char* argv[]){
       }
     }
     if(IO_Q2->head!=NULL){
-
+      processP IOp = IO_Q2->head;
+      int IOtime = clk - IOp->wTime - IOp->rTime - IOp->aTime;
+      if(IOtime == IOp->IO->length && IOp->status == IOEX){
+        IOp->rTime += IOtime-IOp->aTime;
+        IOp->IO = removeIOburst(IOp->IO);
+        printf("\nTime = %d:\t",clk);
+        printf("I/O burst of Process %d completes\n",IOp->pid);
+        IOp = dispatch(IO_Q2);
+        if(IOp->IO == NULL){
+          printf("\t\tProcess %d completes\n",IOp->pid);
+          IOp->status = DONE;
+          totalrTime += IOp->rTime;
+          totalwTime += IOp->wTime;
+          free(IOp);
+          remaining--;
+          printf("\t\tDevice 1 Queue = "); printQueue(IO_Q1);
+        }
+        else{
+          insertQ(RR_Q1,IOp);//***check if done
+          IOp->status = READY;
+          printf("\t\tDevice 1 Queue = "); printQueue(IO_Q1);
+          printf("\t\tProcess %d requests CPU\n",IOp->pid);
+          printf("\t\tReady Queue Q1 = "); printQueue(RR_Q1);
+        }
+        IOp = IO_Q2->head;
+      }
+      if(IOp != NULL && IOp->status==WAIT){
+        IOp->status = IOEX;
+        IOp->wTime = clk - IOp->aTime - IOp->rTime;
+        printf("\t\tI/O Device 2 now in use by Process %d\n",IOp->pid);
+      }
     }
     if(IO_Q3->head!=NULL){
 
@@ -278,6 +320,10 @@ int main(int argc, char* argv[]){
     clk++;
     if(clk==1000){printf("Timeout\n");remaining = 0;}//will delete
   }
+  free(RR_Q1); free(RR_Q2); free(SRTF_Q3);
+  free(IO_Q1); free(IO_Q2); free(IO_Q3); free(IO_Q4); free(IO_Q5);
+  printf("\n\nAverage Waiting Time: %d\n",totalwTime/rObj->procCount);
+  printf("Average Turnaround Time: %d\n",totalrTime/rObj->procCount);
 }
 
 void checkArrivals(QueueP *RR_Q1P, processP *nextProcP, int *clkP){
