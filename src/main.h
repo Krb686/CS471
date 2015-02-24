@@ -3,6 +3,7 @@
 #include "queue.h"
 
 int main(int, char*[]);
+void checkArrivals(QueueP*, processP*, int*);
 void insertQ(QueueP, processP);
 void insertSRTF(QueueP, processP);
 CPUburstP removeCPUburst(CPUburstP);
