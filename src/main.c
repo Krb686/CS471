@@ -38,35 +38,21 @@ int main(int argc, char* argv[]){
   //Setup queues
   RR_Q1->tQ = rObj->tQ1;
   RR_Q1->head = NULL;
-  RR_Q1->qNum = 1;
+  RR_Q1->status = RUNQ1;
 
   RR_Q2->tQ = rObj->tQ2;
   RR_Q2->head = NULL;
-  RR_Q2->qNum = 2;
+  RR_Q2->status = RUNQ2;
 
   SRTF_Q3->tQ = 0;
   SRTF_Q3->head = NULL;
-  SRTF_Q3->qNum = 3;
+  SRTF_Q3->status = RUNQ3;
 
-  IO_Q1->tQ = 0;
   IO_Q1->head = NULL;
-  IO_Q1->qNum = 4;
-
-  IO_Q2->tQ = 0;
   IO_Q2->head = NULL;
-  IO_Q2->qNum = 5;
-
-  IO_Q3->tQ = 0;
   IO_Q3->head = NULL;
-  IO_Q3->qNum = 6;
-
-  IO_Q4->tQ = 0;
   IO_Q4->head = NULL;
-  IO_Q4->qNum = 7;
-
-  IO_Q5->tQ = 0;
   IO_Q5->head = NULL;
-  IO_Q5->qNum = 8;
 
   //printOutput(rObj); 
   printf("tQ1: %d\ntQ2: %d\n", rObj->tQ1, rObj->tQ2);
@@ -237,11 +223,11 @@ int main(int argc, char* argv[]){
       processP IOp = IO_Q1->head;
       int IOtime = clk - IOp->wTime - IOp->rTime - IOp->aTime;
       if(IOtime == IOp->IO->length && IOp->status == IOEX){
-        IOp->rTime += IOtime-IOp->aTime;
+        IOp->rTime += IOtime - IOp->aTime;
         IOp->IO = removeIOburst(IOp->IO);
         printf("\nTime = %d:\t",clk);
         printf("I/O burst of Process %d completes\n",IOp->pid);
-        IOp = dispatch(IO_Q1);
+        IOp = popQ(IO_Q1);
         if(IOp->IO == NULL){
           printf("\t\tProcess %d completes\n",IOp->pid);
           IOp->status = DONE;
@@ -270,11 +256,11 @@ int main(int argc, char* argv[]){
       processP IOp = IO_Q2->head;
       int IOtime = clk - IOp->wTime - IOp->rTime - IOp->aTime;
       if(IOtime == IOp->IO->length && IOp->status == IOEX){
-        IOp->rTime += IOtime-IOp->aTime;
+        IOp->rTime += IOtime - IOp->aTime;
         IOp->IO = removeIOburst(IOp->IO);
         printf("\nTime = %d:\t",clk);
         printf("I/O burst of Process %d completes\n",IOp->pid);
-        IOp = dispatch(IO_Q2);
+        IOp = popQ(IO_Q2);
         if(IOp->IO == NULL){
           printf("\t\tProcess %d completes\n",IOp->pid);
           IOp->status = DONE;
@@ -312,11 +298,11 @@ int main(int argc, char* argv[]){
     //Dispatch processes from their queues to the processor
     if(execProc == NULL){
       if(RR_Q1->head != NULL){
-        dispatchProcsFromQueue(&execProc, &RR_Q1, &clk);
-      } else if(RR_Q2 != NULL){
-        dispatchProcsFromQueue(&execProc, &RR_Q2, &clk);
-      } else if(SRTF_Q3 != NULL){
-        dispatchProcsFromQueue(&execProc, &SRTF_Q3, &clk);
+        dispatch(&execProc, &RR_Q1, &clk);
+      } else if(RR_Q2->head != NULL){
+        dispatch(&execProc, &RR_Q2, &clk);
+      } else if(SRTF_Q3->head != NULL){
+        dispatch(&execProc, &SRTF_Q3, &clk);
       }
     }
  
@@ -329,26 +315,24 @@ int main(int argc, char* argv[]){
   printf("Average Turnaround Time: %d\n",totalrTime/rObj->procCount);
 }
 
-void dispatchProcsFromQueue(processP *execProcP, QueueP *queueP, int *clkP){
-  //Next dispatch process to running state
-    if((*queueP)->head!=NULL){
-      
-      *execProcP = dispatch(*queueP);
+void dispatch(processP *execProcP, QueueP *queueP, int *clkP){
+  //Next popQ process to running state
+      *execProcP = popQ(*queueP);
+      (*execProcP)->status = (*queueP)->status;
 
-      if((*queueP)->qNum = 1){
+     /* if((*queueP)->status = 1){
         (*execProcP)->status = RUNQ1;
-      } else if((*queueP)->qNum = 2){
+      } else if((*queueP)->status = 2){
         (*execProcP)->status = RUNQ2;
-      } else if((*queueP)->qNum = 3){
+      } else if((*queueP)->status = 3){
         (*execProcP)->status = RUNQ3;
-      }
+      }*/
 
       (*execProcP)->wTime = *clkP - (*execProcP)->aTime - (*execProcP)->rTime;
       printf("\t\tDispatcher moves Process %d to Running State\n", (*execProcP)->pid);
       printf("\t\tReady Queue Q1 = ");
       printQueue(*queueP);
       printf("\t\tProcess %d starts running\n", (*execProcP)->pid);
-    }
 }
 
 void checkArrivals(QueueP *RR_Q1P, processP *nextProcP, int *clkP){
@@ -421,7 +405,7 @@ IOburstP removeIOburst(IOburstP IO){
   return t;
 }
 
-processP dispatch(QueueP q){//q->head should never be null
+processP popQ(QueueP q){//q->head should never be null
   processP t = q->head;//t->prev should always be null
   if(t->next!=NULL){
     t->next->prev = NULL;//|qh|<->|q2| to |qh|->|q2|
