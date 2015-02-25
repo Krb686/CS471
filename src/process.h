@@ -1,10 +1,10 @@
-#define READY	1
-#define	RUNQ1	2
-#define RUNQ2	3
-#define RUNQ3	4
-#define IOEX	5
-#define WAIT	6
-#define DONE	7
+#define READY	0
+#define	RUNQ1	1
+#define RUNQ2	2
+#define RUNQ3	3
+#define IOEX	4
+#define WAIT	5
+#define DONE	6
 
 #ifndef CPUBURST_STRUCT
 #define CPUBURST_STRUCT
