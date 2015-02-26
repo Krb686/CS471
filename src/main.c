@@ -59,7 +59,7 @@ int main(int argc, char* argv[]){
   printf("Process count: %d\n", rObj->procCount);
   printP(rObj->PID0);
 
-  int totalrTime = 0, totalwTime = 0;
+  int waitTime = 0, turnTime=0;
 
   //While processes still remain 
   int remaining = rObj->procCount;
@@ -99,7 +99,7 @@ int main(int argc, char* argv[]){
       processP IOp = IO_Q1->head;
       int IOtime = clk - IOp->wTime - IOp->rTime - IOp->aTime;
       if(IOtime == IOp->IO->length && IOp->status == IOEX){
-        IOp->rTime += IOtime - IOp->aTime;
+        IOp->rTime += IOtime;
         IOp->IO = removeIOburst(IOp->IO);
         printf("\nTime = %d:\t",clk);
         printf("I/O burst of Process %d completes\n",IOp->pid);
@@ -107,8 +107,7 @@ int main(int argc, char* argv[]){
         if(IOp->IO == NULL){
           printf("\t\tProcess %d completes\n",IOp->pid);
           IOp->status = DONE;
-          totalrTime += IOp->rTime;
-          totalwTime += IOp->wTime;
+          turnTime += clk-IOp->aTime;
           free(IOp);
           remaining--;
           printf("\t\tDevice 1 Queue = "); printQueue(IO_Q1);
@@ -124,7 +123,7 @@ int main(int argc, char* argv[]){
       }
       if(IOp != NULL && IOp->status==WAIT){
         IOp->status = IOEX;
-        IOp->wTime = clk - IOp->aTime - IOp->rTime;
+        IOp->wTime += clk - IOp->aTime - IOp->rTime - IOp->wTime;
         printf("\t\tI/O Device 1 now in use by Process %d\n",IOp->pid);
       }
     }
@@ -132,7 +131,7 @@ int main(int argc, char* argv[]){
       processP IOp = IO_Q2->head;
       int IOtime = clk - IOp->wTime - IOp->rTime - IOp->aTime;
       if(IOtime == IOp->IO->length && IOp->status == IOEX){
-        IOp->rTime += IOtime - IOp->aTime;
+        IOp->rTime += IOtime;
         IOp->IO = removeIOburst(IOp->IO);
         printf("\nTime = %d:\t",clk);
         printf("I/O burst of Process %d completes\n",IOp->pid);
@@ -140,8 +139,7 @@ int main(int argc, char* argv[]){
         if(IOp->IO == NULL){
           printf("\t\tProcess %d completes\n",IOp->pid);
           IOp->status = DONE;
-          totalrTime += IOp->rTime;
-          totalwTime += IOp->wTime;
+          turnTime += clk-IOp->aTime;
           free(IOp);
           remaining--;
           printf("\t\tDevice 1 Queue = "); printQueue(IO_Q1);
@@ -157,7 +155,7 @@ int main(int argc, char* argv[]){
       }
       if(IOp != NULL && IOp->status==WAIT){
         IOp->status = IOEX;
-        IOp->wTime = clk - IOp->aTime - IOp->rTime;
+        IOp->wTime += clk - IOp->aTime - IOp->rTime - IOp->wTime;
         printf("\t\tI/O Device 2 now in use by Process %d\n",IOp->pid);
       }
     }
@@ -174,21 +172,20 @@ int main(int argc, char* argv[]){
     //Dispatch processes from their queues to the processor
     if(execProc == NULL){
       if(RR_Q1->head != NULL){
-        dispatch(&execProc, &RR_Q1, clk);
+        dispatch(&execProc, &RR_Q1, &waitTime, clk);
       } else if(RR_Q2->head != NULL){
-        dispatch(&execProc, &RR_Q2, clk);
+        dispatch(&execProc, &RR_Q2, &waitTime, clk);
       } else if(SRTF_Q3->head != NULL){
-        dispatch(&execProc, &SRTF_Q3, clk);
+        dispatch(&execProc, &SRTF_Q3, &waitTime, clk);
       }
     }
- 
     clk++;
-    if(clk==1000){printf("Timeout\n");remaining = 0;}//will delete
   }
   free(RR_Q1); free(RR_Q2); free(SRTF_Q3);
   free(IO_Q1); free(IO_Q2); free(IO_Q3); free(IO_Q4); free(IO_Q5);
-  printf("\n\nAverage Waiting Time: %d\n",totalwTime/rObj->procCount);
-  printf("Average Turnaround Time: %d\n",totalrTime/rObj->procCount);
+  printf("\n\nAverage Waiting Time: %d\n",waitTime/rObj->procCount);
+  printf("Average Turnaround Time: %d\n",turnTime/rObj->procCount);
+  free(rObj);
 }
 
 void CPUcomplete(processP *execProc, int CPUrun, int clk){
@@ -214,10 +211,11 @@ void demote(processP *execProc, QueueP *curQ, QueueP *destQ,int clk){
   printQueue(*destQ);//prints [Process x, Process x+1,...]\n
 }
 
-void dispatch(processP *execProcP, QueueP *queueP, int clk){
+void dispatch(processP *execProcP, QueueP *queueP,int *waitTime, int clk){
   //Next popQ process to running state
   *execProcP = popQ(*queueP);
   (*execProcP)->status = (*queueP)->status;
+  *waitTime += clk-(*execProcP)->aTime-(*execProcP)->rTime-(*execProcP)->wTime;
   (*execProcP)->wTime += clk - (*execProcP)->aTime -
                          (*execProcP)->rTime - (*execProcP)->wTime;
   printf("\t\tDispatcher moves Process %d to Running State\n", (*execProcP)->pid);
