@@ -6,7 +6,7 @@ Project 1
 
 High level design
   The design of this program uses 3 three queues, as per the specification.
-  The first and second queues are both round robin, while the second queue is 
+  The first and second queues are both round robin, while the third queue is 
     an SRTF, or shortest remaing time first queue.
 
   There are multiple structs used in this program to represent various components.
@@ -26,21 +26,22 @@ High level design
 
   ==== Queues ====
 
-  Queues are also linked lists of structs.  These structs have the following fields.
+  Queue structs have the following fields.
 
-  head, which is a pointer to the first process in that queue.
+  head, which is a pointer to the first process in that queue. The process itself
+  points to the next process in that queue and is adjusted accordingly for each
+  queue. When a process is executed it is popped from the list and belongs to no
+  queue, therefore has no next or prev.
 
-  tQ, or the time quantum for that queue.  This is set to 0 for queues that do not
+  tQ, or the time quantum for that queue.  This is undefined for queues that do not
     have a time quantum, such as the SRTF and the IO queues. 
 
-  status, or essentially the queue number for Q1, Q2, and Q3, and unset for other 
-    queues.  This was done to be able to recognize which queue a process had been
-    scheduled from.
+  status, or essentially the queue number for Q1, Q2, and Q3, and undefined for
+    other queues.  This was done to be able to recognize which queue a process had
+    been scheduled from in the case of a preemption.
 
   The first struct is called nextProc, which is not one of the primary queues, but
     represents the "arrival" queue of processes that have yet to be placed into Q1.
-
-  Q1, Q2, and Q3 are also linked list queues.
 
 
   IOqueues are also implemented using the same queue struct, and are simple FCFS 
