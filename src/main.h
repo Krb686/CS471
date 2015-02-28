@@ -13,3 +13,4 @@ CPUburstP removeCPUburst(CPUburstP);
 IOburstP removeIOburst(IOburstP);
 void printQueue(QueueP);
 processP popQ(QueueP);
+void processIO(QueueP*, QueueP*, int*, int*, int);
