@@ -257,9 +257,9 @@ void printQueue(QueueP RR_Q){
   processP i = RR_Q->head;
   printf("[");
   while(i!=NULL){
-    printf("%d: rT=%d wT=%d s=%d",i->pid,i->rTime,i->wTime,i->status);
+    printf("Process %d",i->pid,i->rTime,i->wTime,i->status);
     if(i->next!=NULL){
-      printf(" | ");
+      printf(", ");
     }
     i = i->next;
   }
