@@ -207,7 +207,12 @@ void demote(processP *execProc, QueueP *curQ, QueueP *destQ, int *timePrinted, i
   printf("Process %d is preempted\n",(*execProc)->pid);
   printf("\t\tProcess %d is demoted to ",(*execProc)->pid); 
   printf("Ready Queue Q%d\n",(*destQ)->status);
-  insertQ(*destQ,(*execProc));
+  if((*destQ)->status == RUNQ3){
+    insertSRTF(*destQ,(*execProc));
+  }
+  else{
+    insertQ(*destQ,(*execProc));
+  }
   (*execProc)->status = READY;
   printf("\t\tReady Queue Q%d = ",(*destQ)->status);
   printQueue(*destQ);//prints [Process x, Process x+1,...]\n
