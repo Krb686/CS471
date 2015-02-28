@@ -1,0 +1,197 @@
+Time Quantum 1: 10
+Time Quantum 2: 30
+
+Process ID: 1
+Arrival time: 0
+CPU burst: 20
+I/O burst: 50
+I/O device id: 5
+CPU burst: 30
+I/O burst: 40
+I/O device id: 4
+CPU burst: 10
+I/O burst: 50
+I/O device id: 4
+CPU burst: 40
+I/O burst: 100
+I/O device id: 3
+CPU burst: 50
+I/O burst: 70
+I/O device id: 3
+CPU burst: 80
+I/O burst: 90
+I/O device id: 2
+CPU burst: 5
+I/O burst: 20
+I/O device id: 2
+CPU burst: 25
+I/O burst: 60
+I/O device id: 1
+CPU burst: 35
+I/O burst: 80
+I/O device id: 1
+CPU burst: 55
+I/O burst: 60
+I/O device id: 5
+
+Process ID: 2
+Arrival time: 0
+CPU burst: 30
+I/O burst: 40
+I/O device id: 1
+CPU burst: 40
+I/O burst: 40
+I/O device id: 2
+CPU burst: 20
+I/O burst: 40
+I/O device id: 2
+CPU burst: 50
+I/O burst: 90
+I/O device id: 3
+CPU burst: 60
+I/O burst: 60
+I/O device id: 3
+CPU burst: 90
+I/O burst: 95
+I/O device id: 4
+CPU burst: 15
+I/O burst: 25
+I/O device id: 4
+CPU burst: 35
+I/O burst: 50
+I/O device id: 5
+CPU burst: 55
+I/O burst: 70
+I/O device id: 5
+
+Process ID: 3
+Arrival time: 0
+CPU burst: 20
+I/O burst: 30
+I/O device id: 3
+CPU burst: 30
+I/O burst: 30
+I/O device id: 4
+CPU burst: 30
+I/O burst: 50
+I/O device id: 4
+CPU burst: 60
+I/O burst: 100
+I/O device id: 5
+CPU burst: 70
+I/O burst: 70
+I/O device id: 5
+CPU burst: 100
+I/O burst: 105
+I/O device id: 5
+CPU burst: 25
+I/O burst: 35
+I/O device id: 5
+CPU burst: 45
+I/O burst: 60
+I/O device id: 5
+
+Process ID: 4
+Arrival time: 30
+CPU burst: 10
+I/O burst: 40
+I/O device id: 2
+CPU burst: 10
+I/O burst: 40
+I/O device id: 2
+CPU burst: 10
+I/O burst: 50
+I/O device id: 1
+CPU burst: 20
+I/O burst: 60
+I/O device id: 1
+CPU burst: 30
+I/O burst: 70
+I/O device id: 5
+CPU burst: 40
+I/O burst: 50
+I/O device id: 4
+CPU burst: 50
+I/O burst: 70
+I/O device id: 3
+
+Process ID: 5
+Arrival time: 100
+CPU burst: 10
+I/O burst: 10
+I/O device id: 3
+CPU burst: 10
+I/O burst: 20
+I/O device id: 4
+CPU burst: 10
+I/O burst: 50
+I/O device id: 4
+CPU burst: 20
+I/O burst: 20
+I/O device id: 5
+CPU burst: 10
+I/O burst: 40
+I/O device id: 5
+CPU burst: 20
+I/O burst: 50
+I/O device id: 2
+
+Process ID: 6
+Arrival time: 120
+CPU burst: 30
+I/O burst: 10
+I/O device id: 1
+CPU burst: 40
+I/O burst: 20
+I/O device id: 2
+CPU burst: 30
+I/O burst: 50
+I/O device id: 3
+CPU burst: 40
+I/O burst: 20
+I/O device id: 4
+CPU burst: 50
+I/O burst: 20
+I/O device id: 5
+
+Process ID: 7
+Arrival time: 120
+CPU burst: 20
+I/O burst: 5
+I/O device id: 2
+CPU burst: 10
+I/O burst: 10
+I/O device id: 1
+CPU burst: 20
+I/O burst: 50
+I/O device id: 1
+CPU burst: 40
+I/O burst: 40
+I/O device id: 2
+
+Process ID: 8
+Arrival time: 130
+CPU burst: 20
+I/O burst: 5
+I/O device id: 3
+CPU burst: 40
+I/O burst: 20
+I/O device id: 3
+CPU burst: 50
+I/O burst: 20
+I/O device id: 3
+
+Process ID: 9
+Arrival time: 250
+CPU burst: 10
+I/O burst: 20
+I/O device id: 5
+CPU burst: 10
+I/O burst: 10
+I/O device id: 4
+
+Process ID: 10
+Arrival time: 350
+CPU burst: 60
+I/O burst: 100
+I/O device id: 5
