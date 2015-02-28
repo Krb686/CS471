@@ -268,6 +268,9 @@ void printQueue(QueueP RR_Q){
 
 void processIO(QueueP *queueP, QueueP *RR_Q1, int *turnTime, int *remaining, int clk){
 
+    //Save the devId
+    int devId = (*queueP)->head->IO->devId;
+
     
     processP head = (*queueP)->head;
     int IOtime = clk - head->wTime - head->rTime - head->aTime;
@@ -276,8 +279,7 @@ void processIO(QueueP *queueP, QueueP *RR_Q1, int *turnTime, int *remaining, int
     if(IOtime == head->IO->length && head->status == IOEX){
         head->rTime += IOtime;
 
-        //Save the devId
-        int devId = (*queueP)->head->IO->devId;
+        
 
         //Pop the IOburst    
         head->IO = removeIOburst(head->IO);
@@ -312,6 +314,6 @@ void processIO(QueueP *queueP, QueueP *RR_Q1, int *turnTime, int *remaining, int
     if(head != NULL && head->status==WAIT){
         head->status = IOEX;
         head->wTime += clk - head->aTime - head->rTime - head->wTime;
-        printf("\t\tI/O Device 1 now in use by Process %d\n",head->pid);
+        printf("\t\tI/O Device %d now in use by Process %d\n",devId, head->pid);
     }
 }
