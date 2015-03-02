@@ -1,0 +1,56 @@
+CS471
+Luiz Cruz
+Kevin Briggs
+
+Project 1
+
+High level design
+  The design of this program uses 3 three queues, as per the specification.
+  The first and second queues are both round robin, while the second queue is 
+    an SRTF, or shortest remaing time first queue.
+
+  There are multiple structs used in this program to represent various components.
+
+  ==== Processes ====
+
+  Each process is represented by a struct with several fields. Those fields are a 
+  *next pointer, a *prev pointer, a CPUburst which is itself a pointer to a struct,
+  an IOburst which is another pointer to a struct, and some integers, such as the
+  process id (pid), the aTime or arrival time, the wTime or wait time, and the
+  rTime, or running time for that process.  
+
+  The CPUburst struct represents a single CPUburst for that process, and is itself
+  a linked list of all the CPUbursts for that process.  This is also the same case
+  for the IObursts of a process.
+
+
+  ==== Queues ====
+
+  Queues are also linked lists of structs.  These structs have the following fields.
+
+  head, which is a pointer to the first process in that queue.
+
+  tQ, or the time quantum for that queue.  This is set to 0 for queues that do not
+    have a time quantum, such as the SRTF and the IO queues. 
+
+  status, or essentially the queue number for Q1, Q2, and Q3, and unset for other 
+    queues.  This was done to be able to recognize which queue a process had been
+    scheduled from.
+
+  The first struct is called nextProc, which is not one of the primary queues, but
+    represents the "arrival" queue of processes that have yet to be placed into Q1.
+
+  Q1, Q2, and Q3 are also linked list queues.
+
+
+  IOqueues are also implemented using the same queue struct, and are simple FCFS 
+    queues.
+
+
+  ==== Parser ====
+
+  A parser was used to read in all of the lines of the input file to then be processed.
+    The results of the parsing are returned as a struct, and from there, the queues
+    are setup in the main function.
+
+  

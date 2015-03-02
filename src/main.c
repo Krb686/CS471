@@ -320,12 +320,7 @@ void printQueue(QueueP RR_Q){
   processP i = RR_Q->head;
   printf("[");
   while(i!=NULL){
-    if(RR_Q->status==RUNQ3){
-      printf("%d:%d",i->pid,i->CPU->length);
-    }
-    else{
-      printf("Process %d",i->pid);
-    }
+    printf("Process %d",i->pid);
     if(i->next!=NULL){
       printf(", ");
     }
