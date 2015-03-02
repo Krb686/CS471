@@ -54,7 +54,6 @@ int main(int argc, char* argv[]){
   IO_Q4->head = NULL;
   IO_Q5->head = NULL;
 
-  //printOutput(rObj); 
   printf("tQ1: %d\ntQ2: %d\n", rObj->tQ1, rObj->tQ2);
   printf("Process count: %d\n", rObj->procCount);
   printP(rObj->PID0);
@@ -72,27 +71,53 @@ int main(int argc, char* argv[]){
     
     //check if execProc should be preempted
     if(execProc!=NULL){
+
+      //Calculate amount of time the current processes's CPUburst has been running
       int CPUrun = clk-execProc->rTime-execProc->wTime-execProc->aTime;
+
+      //If the CPUburst runtime is equal to the CPUburst runtime length
       if(CPUrun == execProc->CPU->length){
-        CPUcomplete(&execProc, CPUrun, clk);
-        switch(execProc->IO->devId){
-          case 1: insertQ(IO_Q1, execProc); printQueue(IO_Q1);  break;
-          case 2: insertQ(IO_Q2, execProc); printQueue(IO_Q2);  break;
-          case 3: insertQ(IO_Q3, execProc); printQueue(IO_Q3);  break;
-          case 4: insertQ(IO_Q4, execProc); printQueue(IO_Q4);  break;
-          case 5: insertQ(IO_Q5, execProc); printQueue(IO_Q5);  break;
-          default: printf("invalid devId!\n");
-        }
-        execProc = NULL;
+          CPUcomplete(&execProc, CPUrun, clk);
+        
+          switch(execProc->IO->devId){
+              case 1: insertQ(IO_Q1, execProc); printQueue(IO_Q1);  break;
+              case 2: insertQ(IO_Q2, execProc); printQueue(IO_Q2);  break;
+              case 3: insertQ(IO_Q3, execProc); printQueue(IO_Q3);  break;
+              case 4: insertQ(IO_Q4, execProc); printQueue(IO_Q4);  break;
+              case 5: insertQ(IO_Q5, execProc); printQueue(IO_Q5);  break;
+              default: printf("invalid devId!\n");
+          }
+
+          execProc = NULL;
+      } else if(execProc->status == RUNQ1 && CPUrun == RR_Q1->tQ){//demote to q2
+          demote(&execProc,&RR_Q1,&RR_Q2,clk);
+          execProc = NULL;
+      } else if(execProc->status == RUNQ2 && CPUrun == RR_Q2->tQ){//demote to q3
+          demote(&execProc,&RR_Q2,&SRTF_Q3,clk);
+          execProc = NULL;
+      } else {
+          //Check if a current waiting process should preempt the running process
+          if(RR_Q1->head!=NULL && execProc->status!=RUNQ1){
+
+              execProc->rTime += CPUrun;
+              execProc->CPU->length -= CPUrun;
+              //print stuff could go here
+               
+              //Remove the current running process back to its original queue
+              if(execProc->status == RUNQ2){
+                  execProc->status = READY;
+                  insertQ(RR_Q2, execProc);
+              } else if(execProc->status == RUNQ3){
+                  execProc->status = READY;
+                  insertQ(SRTF_Q3, execProc);
+              }
+
+              execProc = NULL;     
+
+          }
+
       }
-      else if(execProc->status == RUNQ1 && CPUrun == RR_Q1->tQ){//demote to q2
-        demote(&execProc,&RR_Q1,&RR_Q2,clk);
-        execProc = NULL;
-      }
-      else if(execProc->status == RUNQ2 && CPUrun == RR_Q2->tQ){//demote to q3
-        demote(&execProc,&RR_Q2,&SRTF_Q3,clk);
-        execProc = NULL;
-      }
+      
     }
 
 
@@ -174,13 +199,18 @@ void dispatch(processP *execProcP, QueueP *queueP,int *waitTime, int clk){
 }
 
 void checkArrivals(QueueP *RR_Q1P, processP *nextProcP, int clk){
+  
+  //If there is a process waiting to arrive
   while(*nextProcP != NULL && (*nextProcP)->aTime == clk){
     printf("Process %d arrives\n\t\t", (*nextProcP)->pid);
     printf("Process %d requests CPU\n\t\t", (*nextProcP)->pid);
     (*nextProcP)->status = READY;
     insertQ(*RR_Q1P, *nextProcP);
-    *nextProcP = (*nextProcP)->next;// nextProc = nP // nP->prev = P
-      
+
+    //The head of nextProc (arrivals) has been inserted into Q1, so change the head of nextProc
+    *nextProcP = (*nextProcP)->next;
+    
+    //Break links between current head and old head inserted into Q1 
     if(*nextProcP!=NULL){
       (*nextProcP)->prev->next = NULL;// q: ...->|P|->NULL
       (*nextProcP)->prev = NULL;// nP->prev = NULL
@@ -257,7 +287,7 @@ void printQueue(QueueP RR_Q){
   processP i = RR_Q->head;
   printf("[");
   while(i!=NULL){
-    printf("Process %d",i->pid,i->rTime,i->wTime,i->status);
+    printf("Process %d",i->pid);
     if(i->next!=NULL){
       printf(", ");
     }
