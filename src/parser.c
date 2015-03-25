@@ -5,27 +5,24 @@
 #include <string.h>
 
 
-//COMMENTS
-// Alot of the information in here needs to be available in main
-// such as device count, process count, etc
-// We could either return a bunch of information by reference,
-// or just return a nicely packaged struct.  I decided option 2.
-// Compile and run the test cases and you'll see it still works.
-// This way, we can return anything else we might need just by 
-// adding it into the "ParserOutput" struct
+/////COMMENTS
+///// Alot of the information in here needs to be available in main
+///// such as device count, process count, etc
+///// We could either return a bunch of information by reference,
+///// or just return a nicely packaged struct.  I decided option 2.
+///// Compile and run the test cases and you'll see it still works.
+///// This way, we can return anything else we might need just by 
+///// adding it into the "ParserOutput" struct
 
 ParserOutputP parser(char* fName){
 
-  ParserOutputP rObj = malloc(sizeof(ParserOutputR));
-
+  ParserOutputP ret = (ParserOutputP)malloc(sizeof(ParserOutputR));
+  ret->count = 0;
   FILE *inFileP;
   char* line;
-  char* seek;
   char* lines[100];
-  int i=0,j=0,pidI=0;
+  int i=0,j=0;
   processP pid0=NULL,pid9=NULL;
-  CPUburstP CPU0=NULL,CPU9=NULL;
-  IOburstP IO0=NULL,IO9=NULL;
   
   line = (char*)malloc(sizeof(char)*100);
   inFileP = fopen(fName, "r");
@@ -34,34 +31,37 @@ ParserOutputP parser(char* fName){
     if(*line=='\n'){
       line++; *line = '\0'; line--;
       line -= sizeof(char)*i;
-      if(strstr(line,"Time Quantum 1: ")!=NULL){
-        rObj->tQ1=atoi(line+16);
+      if(strstr(line,"Memory Size: ")!=NULL){
+        ret->memSize=atoi(line+13);
       }
-      else if(strstr(line,"Time Quantum 2: ")!=NULL){
-        rObj->tQ2=atoi(line+16);
+      else if(strstr(line,"Memory Management Policy: ")!=NULL){
+        if(strstr(line+26,"VSP")!=NULL){
+          ret->policy=0;
+        }
+        else if(strstr(line+26,"PAG")!=NULL){
+          ret->policy=1;
+        }
+        if(strstr(line+26,"SEG")!=NULL){
+          ret->policy=2;
+        }
       }
-      else if(strstr(line,"Process ID: ")!=NULL){
+      else if(strstr(line,"Policy Parameter: ")!=NULL){
+        ret->param=atoi(line+18);
+      }
+      else if(strstr(line,"Process Id: ")!=NULL){
         pid0 = insertP(pid0,atoi(line+12));
         pid9 = lastP(pid0);
-        CPU0 = NULL;
-        IO0 = NULL;
-        rObj->procCount++;
-        rObj->PID0 = pid0;
+        ret->count++;
+        ret->PID0 = pid0;
       }
       else if(strstr(line,"Arrival time: ")!=NULL){
         pid9->aTime=atoi(line+14);
       }
-      else if(strstr(line,"CPU burst: ")!=NULL){
-        CPU0 = insertCPU(CPU0,atoi(line+11));
-        pid9->CPU = CPU0;
+      else if(strstr(line,"Lifetime in Memory: ")!=NULL){
+        pid9->lifetime=atoi(line+20);
       }
-      else if(strstr(line,"I/O burst: ")!=NULL){
-        IO0 = insertIO(IO0,atoi(line+11));
-        IO9 = lastIO(IO0);
-        pid9->IO = IO0;
-      }
-      else if(strstr(line,"I/O device id: ")!=NULL){
-        IO9->devId=atoi(line+15);
+      else if(strstr(line,"Address Space: ")!=NULL){
+        pid9->space=atoi(line+15);
       }
       i = 0;
     }
@@ -70,11 +70,18 @@ ParserOutputP parser(char* fName){
       i++;
     }
   }
+  if(i!=0){
+    line++; *line = '\0'; line--;
+    line -= sizeof(char)*i;
+    if(strstr(line,"Address Space: ")!=NULL){
+      pid9->space=atoi(line+15);
+    }
+    i = 0;
+  }
   free(line);
   fclose(inFileP);
 
-  return rObj;
-  //return pid0;
+  return ret;
 }
 
 processP insertP(processP p, int pid){
@@ -90,43 +97,7 @@ processP insertP(processP p, int pid){
   return t;
 }
 
-CPUburstP insertCPU(CPUburstP p, int l){
-  CPUburstP t=(CPUburstP)malloc(sizeof(CPUburstR));
-  CPUburstP end = lastCPU(p);
-  t->length = l;
-  t->next = NULL;
-  if(end!=NULL){
-    end->next = t;
-    return p;
-  }
-  return t;
-}
-
-IOburstP insertIO(IOburstP p, int l){
-  IOburstP t=(IOburstP)malloc(sizeof(IOburstR));
-  IOburstP end = lastIO(p);
-  t->length = l;
-  t->next = NULL;
-  if(end!=NULL){
-    end->next = t;
-    return p;
-  }
-  return t;
-}
-
 processP lastP(processP p){
   if(p==NULL||p->next==NULL) return p;
   lastP(p->next);
 }
-
-CPUburstP lastCPU(CPUburstP p){
-  if(p==NULL||p->next==NULL) return p;
-  lastCPU(p->next);
-}
-
-IOburstP lastIO(IOburstP p){
-  if(p==NULL||p->next==NULL) return p;
-  lastIO(p->next);
-}
-
-
