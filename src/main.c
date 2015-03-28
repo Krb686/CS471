@@ -96,6 +96,13 @@ void pop(processP *unQ, processP *Q){
   if(lQ==NULL) *Q=t;
   else lQ->next = t;
 }
+<<<<<<< Updated upstream
+=======
+
+
+//this function will initialize the heap according to size and policy
+mem_ptr initMem(int size, int policy){
+>>>>>>> Stashed changes
 
 memP initMem(int size, int policy, int param){
   memP t = (memP)malloc(sizeof(memR));
@@ -107,4 +114,51 @@ memP initMem(int size, int policy, int param){
   t->prev = NULL;
   t->proc = NULL;
   return t;
+}
+
+
+
+void allocMem(mem_ptr *heap, processP *proc){
+  if((*heap)->policy == 0){
+    allocProcVSP(heap, proc);
+  } else if((*heap)->policy == 1){
+    allocProcPAG(heap, proc);
+  } else if((*heap)->policy == 2){
+    allocProcSEG(heap, proc);
+  }
+}
+
+void allocProcVSP(mem_ptr *heap, processP *proc){
+  int param = (*heap)->param;
+
+  
+  //First fit
+  if(param == 0){
+  
+    int locFound = 0;
+ 
+    while((locFound == 0) && (*heap != NULL)){
+      
+    }
+
+  //Best fit
+  } else if(param == 1){
+
+  //Worst fit
+  } else if(param == 2){
+
+
+  }
+
+}
+
+void allocProcPAG(mem_ptr *heap, processP *proc){
+
+
+
+}
+
+void allocProcSEG(mem_ptr *heap, processP *proc){
+
+
 }
