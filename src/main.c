@@ -110,17 +110,17 @@ memP initMem(int size, int policy, int param){
 
 
 void allocMem(memP *heap, processP *proc, int memSize){
-  if((*heap)->policy == 0){
+  if(heap->policy == 0){
     allocMemVSP(heap, proc, memSize);
-  } else if((*heap)->policy == 1){
+  } else if(heap->policy == 1){
     allocMemPAG(heap, proc, memSize);
-  } else if((*heap)->policy == 2){
+  } else if(heap->policy == 2){
     allocMemSEG(heap, proc, memSize);
   }
 }
 
 void allocMemVSP(memP *heap, processP *proc, int memSize){
-  int param = (*heap)->param;
+  int param = heap->param;
   int requiredSize = proc->space->x;
 
   
