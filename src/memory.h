@@ -23,6 +23,7 @@ typedef enum{FREE, ALLOCATED} mem_status;
 typedef struct m{
     int status;
     int address;
+    int param;
     struct m *next;
     struct m *previous;
 } mem_rec, *mem_ptr;
