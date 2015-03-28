@@ -96,14 +96,8 @@ void pop(processP *unQ, processP *Q){
   if(lQ==NULL) *Q=t;
   else lQ->next = t;
 }
-<<<<<<< Updated upstream
-=======
-
 
 //this function will initialize the heap according to size and policy
-mem_ptr initMem(int size, int policy){
->>>>>>> Stashed changes
-
 memP initMem(int size, int policy, int param){
   memP t = (memP)malloc(sizeof(memR));
   t->size = size;
