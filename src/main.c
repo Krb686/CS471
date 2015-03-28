@@ -34,7 +34,7 @@ int main(int argc, char* argv[]){
     i = inQ;
     while(i!=NULL){
       //can prob make one func that calls memcheck first
-      allocMem(heap, i, ret->memSize);
+      allocMem(&heap, i, ret->memSize);
       printStatus(ADMIT,inQ)//print formatted status
       i = i->next;
     }
@@ -109,40 +109,33 @@ memP initMem(int size, int policy, int param){
 
 
 
-void allocMem(memP *heap, processP *proc, int memSize){
-  if(heap->policy == 0){
+void allocMem(memP *heap, processP proc, int memSize){
+  if((*heap)->policy == 0){
     allocMemVSP(heap, proc, memSize);
-  } else if(heap->policy == 1){
+  } else if((*heap)->policy == 1){
     allocMemPAG(heap, proc, memSize);
-  } else if(heap->policy == 2){
+  } else if((*heap)->policy == 2){
     allocMemSEG(heap, proc, memSize);
   }
 }
 
-void allocMemVSP(memP *heap, processP *proc, int memSize){
-  int param = heap->param;
+void allocMemVSP(memP *heap, processP proc, int memSize){
+  int param = (*heap)->param;
   int requiredSize = proc->space->x;
-
+  memP t = *heap;
   
   //First fit
   if(param == 0){
     int locFound = 0;
 
-    while((locFound == 0) && (heap != NULL)){
-      int heapSize = 0;
+    while((locFound == 0) && (t != NULL)){
+      int heapSize = t->size;
 
-      if(heap->next != NULL){
-        heapSize = heap->next->address - heap->address;
-      } else {
-        heapSize = memSize; 
-      }
-
-
-      if(heap->status == 0 && (heapSize >= requiredSize)){
+      if(t->proc == NULL && (heapSize >= requiredSize)){
         locFound = 1;
-        subdivideHeap(heap, heapSize, requiredSize);
+        subdivideHeap(&t, heapSize, requiredSize);
       } else {
-        heap = heap->next;
+        t = t->next;
       }
       
     }
@@ -152,81 +145,93 @@ void allocMemVSP(memP *heap, processP *proc, int memSize){
     int smallestSize = memSize + 1;
     memP smallestBlock = heap;
 
-    while(heap != NULL){
-      if(heap->status == 0){
-        int heapSize = 0;
+    while(t != NULL){
+      if(t->proc == NULL){
+        int heapSize = t->size;
         
-        if(heap->next != NULL){
-          heapSize = heap->next->address - heap->address;
-        } else {
-          heapSize = memSize;
-        }
-
         if(heapSize >= requiredSize && heapSize < smallestSize){
           smallestSize = heapSize;
-          smallestBlock = heap;
+          smallestBlock = t;
         } 
       }
 
-      heap = heap->next;
+      t = t->next;
     }
 
-    subdivideHeap(heap, heapSize, requiredSize);
+    subdivideHeap(&smallestBlock, heapSize, requiredSize);
 
 
   //Worst fit
   } else if(param == 2){
     int largestSize = 0;
-    memP largestBlock = heap;
+    memP largestBlock = t;
 
-    while(heap!=NULL){
-      if(heap->status == 0){
-        int heapSize = 0;
-
-        if(heap->next != NULL){
-          heapSize = heap->next->address - heap->address;
-        } else {
-          heapSize = memSize;
-        }
+    while(t!=NULL){
+      if(t->status == 0){
+        int heapSize = t->size;
 
         if(heapSize >= requiredSize && heapSize > largestSize){
           largestSize = heapSize;
-          largestBlock = heap;
+          largestBlock = t;
         }
       }
 
-      heap = heap->next;
+      t = t->next;
     }
 
-    subdivideHeap(heap, heapSize, requiredSize);
+    subdivideHeap(&largestBlock, heapSize, requiredSize);
 
   }
 
 }
 
-void allocMemPAG(memP *heap, processP *proc){
+void allocMemPAG(memP *heap, processP proc){
+  memP t = *heap;
 
+  int pageSize = t->param;
+  int pagesRequired = (proc->space->x / pageSize) + 1;
+  
+
+  int pagesFound = 0;
+  while((pagesFound < pagesRequired) && (t != NULL)){
+    if(t->proc == NULL){
+      pagesFound++;
+
+      //add to some sort of list
+
+    }
+
+    t = t->next;
+
+  }  
+
+  if(pagesFound == pagesRequired){
+  
+  } else {
+
+  } 
+
+}
+
+void allocMemSEG(memP *heap, processP proc){
 
 
 }
 
-void allocMemSEG(memP *heap, processP *proc){
-
-
-}
-
-void subdivideHeap(memP *heap, int heapSize, int requiredSize){
+void subdivideHeap(memP *heap, processP proc, int heapSize, int requiredSize){
   if(heapSize != requiredSize){
     memP newHeapBlock = malloc(sizeof(memP));
-    newHeapBlock->status = 0;
-    newHeapBlock->address = heap->address + requiredSize;
+    newHeapBlock->proc = NULL;
+    newHeapBlock->addr = heap->addr + requiredSize;
     newHeapBlock->param = heap->param;
     newHeapBlock->next = heap->next;
     newHeapBlock->prev = heap;
+    newHeapBlock->size = heapSize - requiredSize;
 
-    heap->status = 1;
+    heap->proc = proc;
     heap->next = newHeapBlock;
+    heap->size = requiredSize;
   } else {
-    heap->status = 1;
+    heap->proc = proc;
   }
 }
