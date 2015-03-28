@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "mm.h"
 
 int main(int, char*[]);
 void pop(processP*, processP*);

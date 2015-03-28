@@ -20,11 +20,11 @@ int main(int argc, char* argv[]){
   int pass= 0;
 
   //this function will initialize the heap according to size and policy
-  heap = initMem(ret->memSize,ret->policy);
+  memP heap = initMem(ret->memSize,ret->policy, ret->param);
 
   while(!done){
     //traverse mem checking all processes for end of life
-    sweepMem(clk,i)//mem_ptr should have processP field
+    heap = sweepMem(clk,inQ,heap)//mem_ptr should have processP field
 
     while(unQed!=NULL && unQed->aTime == clk){
       pop(&unQed,&inQ);//finished
@@ -36,7 +36,7 @@ int main(int argc, char* argv[]){
       //can prob make one func that calls memcheck first
       pass = memCheck(i,heap);//check if enough memory
       if(pass){
-        inMem(i,&heap);//place in mem remove from inQ
+        placeInMem(i,&heap);//place in mem remove from inQ
         printStatus(ADMIT,inQ)//print formatted status
       }
       i = i->next;
@@ -45,6 +45,45 @@ int main(int argc, char* argv[]){
     clk++;
     done = 1;//temp. Can prob use (inQ==NULL && unQed==NULL) instead
   }
+}
+
+memP sweepMem(int clk, memP heap){
+  if(heap==NULL) return heap;
+  if(heap->proc != NULL && heap->proc->deadline == clk){
+    removeProc(&heap);
+    heap->next = sweepMem(clk, heap->next);
+    return heap;
+  }
+  heap->next = sweepMem(clk, heap->next);
+  return heap;
+}
+
+//heap->proc should never be null
+void removeProc(memP *heap){
+  memP t = (*heap);
+  free(t->proc->space);
+  free(t->proc);
+  t->proc = NULL;
+  if(t->prev!=NULL){
+    t = t->prev;
+    t->size += t->next->size
+    if(t->next->next!=NULL){
+      t->size += t->next->next->size;
+      t->next = t->next->next->next;
+      free((*heap)->next);
+    }
+    else t->next = NULL;
+    free(*heap);
+  }
+  else if(t->next!=NULL){
+    t = t->next;
+    (*heap)->size += t->size;
+    (*heap)->next = t->next;
+    free(t)
+    t = (*heap);
+  }
+  if(t->next!=NULL) t->next->prev = t;
+  *heap = t;
 }
 
 void pop(processP *unQ, processP *Q){
@@ -57,7 +96,15 @@ void pop(processP *unQ, processP *Q){
   if(lQ==NULL) *Q=t;
   else lQ->next = t;
 }
-//this function will initialize the heap according to size and policy
-mem_ptr initMem(int size, int policy){
 
+memP initMem(int size, int policy, int param){
+  memP t = (memP)malloc(sizeof(memR));
+  t->size = size;
+  t->addr = 0;
+  t->policy = policy;
+  t->param= param;
+  t->next = NULL;
+  t->prev = NULL;
+  t->proc = NULL;
+  return t;
 }

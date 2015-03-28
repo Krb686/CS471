@@ -62,7 +62,7 @@ ParserOutputP parser(char* fName){
         pid9->aTime=atoi(line+14);
       }
       else if(strstr(line,"Lifetime in Memory: ")!=NULL){
-        pid9->lifetime=atoi(line+20);
+        pid9->deadline=atoi(line+20);
       }
       else if(strstr(line,"Address Space: ")!=NULL){
         if(ret->policy==2){
