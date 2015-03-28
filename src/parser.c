@@ -1,9 +1,8 @@
 #include "parser.h"
-#include "process.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdint.h>
 
 /////COMMENTS
 ///// Alot of the information in here needs to be available in main
@@ -20,9 +19,13 @@ ParserOutputP parser(char* fName){
   ret->count = 0;
   FILE *inFileP;
   char* line;
+  char* tmp1;
+  char* tmp2;
   char* lines[100];
   int i=0,j=0;
+  intptr_t x=0;
   processP pid0=NULL,pid9=NULL;
+  spaceP space0=NULL;
   
   line = (char*)malloc(sizeof(char)*100);
   inFileP = fopen(fName, "r");
@@ -51,6 +54,7 @@ ParserOutputP parser(char* fName){
       else if(strstr(line,"Process Id: ")!=NULL){
         pid0 = insertP(pid0,atoi(line+12));
         pid9 = lastP(pid0);
+        space0 = NULL;
         ret->count++;
         ret->PID0 = pid0;
       }
@@ -61,7 +65,23 @@ ParserOutputP parser(char* fName){
         pid9->lifetime=atoi(line+20);
       }
       else if(strstr(line,"Address Space: ")!=NULL){
-        pid9->space=atoi(line+15);
+        if(ret->policy==2){
+          tmp2 = line+15;
+          tmp1 = strchr(line+15,' ');
+          while(tmp1!=NULL){
+            *tmp1 = '\0'; tmp1++;
+            space0 = insertSpace(space0,atoi(tmp2));
+            tmp2 = tmp1;
+            tmp1 = strchr(tmp1,' ');
+          }
+          tmp1 = strchr(tmp2,'\n');
+          *tmp1='\0';
+          space0 = insertSpace(space0,atoi(tmp2));
+        }
+        else{
+          space0 = insertSpace(space0,atoi(line+15));
+        }
+        pid9->space = space0;
       }
       i = 0;
     }
@@ -71,12 +91,22 @@ ParserOutputP parser(char* fName){
     }
   }
   if(i!=0){
-    line++; *line = '\0'; line--;
-    line -= sizeof(char)*i;
-    if(strstr(line,"Address Space: ")!=NULL){
-      pid9->space=atoi(line+15);
+    if(ret->policy==2){
+      tmp2 = line+15;
+      tmp1 = strchr(line+15,' ');
+      while(tmp1!=NULL){
+        *tmp1 = '\0'; tmp1++;
+        space0 = insertSpace(space0,atoi(tmp2));
+        tmp2 = tmp1;
+        tmp1 = strchr(tmp1,' ');
+      }
+      tmp1 = strchr(tmp2,EOF);
+      *tmp1='\0';
+      space0 = insertSpace(space0,atoi(tmp2));
     }
-    i = 0;
+    else{
+      space0 = insertSpace(space0,atoi(line+15));
+    }
   }
   free(line);
   fclose(inFileP);
@@ -97,7 +127,25 @@ processP insertP(processP p, int pid){
   return t;
 }
 
+spaceP insertSpace(spaceP p, int x){
+  if(x==0) return p;
+  spaceP t=(spaceP)malloc(sizeof(spaceR));
+  spaceP end = lastSpace(p);
+  t->x = x;
+  t->next = NULL;
+  if(end!=NULL){
+    end->next = t;
+    return p;
+  }
+  return t;
+}
+
 processP lastP(processP p){
   if(p==NULL||p->next==NULL) return p;
   lastP(p->next);
+}
+
+spaceP lastSpace(spaceP p){
+  if(p==NULL||p->next==NULL) return p;
+  lastSpace(p->next);
 }

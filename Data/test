@@ -1,5 +1,5 @@
 Memory Size: 2000
-Memory Management Policy: VSP
+Memory Management Policy: SEG
 Policy Parameter: 0
 
 Process Id: 1
@@ -40,4 +40,4 @@ Address Space: 800
 Process Id: 8
 Arrival Time: 1600 
 Lifetime in Memory: 500
-Address Space: 100
+Address Space: 100 100
