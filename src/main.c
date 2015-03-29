@@ -187,6 +187,12 @@ void allocMemVSP(memP *heap, processP proc, int memSize){
 
 void allocMemPAG(memP *heap, processP proc){
   memP t = *heap;
+  tempPageP tempPageIndex = malloc(sizeof(tempPageR));
+  tempPageIndex->next = NULL;
+  tempPageIndex->prev = NULL;
+  tempPageIndex->memBlock = NULL;
+
+  tempPageP tempPageHead = tempPageIndex;
 
   int pageSize = t->param;
   int pagesRequired = (proc->space->x / pageSize) + 1;
@@ -197,18 +203,39 @@ void allocMemPAG(memP *heap, processP proc){
     if(t->proc == NULL){
       pagesFound++;
 
-      //add to some sort of list
 
+      if(pagesFound == 1){
+        tempPageIndex->memBlock = t;
+      } else if(pagesFound > 1) {
+        tempPageP tempPage = malloc(sizeof(tempPageR));
+        tempPage->memBlock = t;
+        tempPageIndex->next = tempPage;
+        tempPage->prev = tempPageIndex;
+        tempPageIndex = tempPageIndex->next;
+      }
     }
 
     t = t->next;
 
   }  
 
+  tempPageIndex = tempPageHead;
   if(pagesFound == pagesRequired){
-  
+    while(tempPageIndex != NULL){
+      tempPageIndex->memBlock->proc = proc;
+      tempPageIndex = tempPageIndex->next;
+    } 
   } else {
+    if(tempPageIndex->next == NULL){
+      free(tempPageIndex);
+    } else {
+      while(tempPageIndex->next != NULL){
+        tempPageIndex = tempPageIndex->next;
+        free(tempPageIndex->prev;
+      }
 
+      free(tempPageIndex);
+    }
   } 
 
 }
