@@ -126,12 +126,11 @@ spaceP insertSpace(spaceP p, int x){
   spaceP end = lastSpace(p);
   t->x = x;
   t->next = NULL;
+  t->prev = end;
   if(end!=NULL){
     end->next = t;
-    t->prev = end;
     return p;
   }
-  t->prev = NULL;
   return t;
 }
 

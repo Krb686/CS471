@@ -167,7 +167,7 @@ int allocMemVSP(memP *heap, processP proc, int memSize){
       heapSize = t->size;
       if(t->proc == NULL && (heapSize >= requiredSize)){
         locFound = 1;
-        subdivideHeap(&t, proc, heapSize, requiredSize);
+        subdivideHeap(&t, proc, requiredSize);
       } else {
         t = t->next;
       }
@@ -193,7 +193,7 @@ int allocMemVSP(memP *heap, processP proc, int memSize){
       t = t->next;
     }
     if(smallestSize != memSize+1){
-      subdivideHeap(&smallestBlock, proc, heapSize, requiredSize);
+      subdivideHeap(&smallestBlock, proc, requiredSize);
       return 1;
     }
     else return 0;
@@ -216,7 +216,7 @@ int allocMemVSP(memP *heap, processP proc, int memSize){
       t = t->next;
     }
     if(largestSize != 0){
-      subdivideHeap(&largestBlock, proc, heapSize, requiredSize);
+      subdivideHeap(&largestBlock, proc, requiredSize);
       return 1;
     }
     else return 0;
@@ -346,7 +346,8 @@ void allocMemSEG(memP *heap, processP proc, int memSize){
 }
 
 
-void subdivideHeap(memP *heap, processP proc, int heapSize, int requiredSize){
+void subdivideHeap(memP *heap, processP proc, int requiredSize){
+  int heapSize = (*heap)->size;
   if(heapSize != requiredSize){
     memP newHeapBlock = malloc(sizeof(memR));
     newHeapBlock->proc = NULL;

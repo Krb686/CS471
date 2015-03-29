@@ -17,7 +17,7 @@ void allocMemPAG(memP*, processP, int);
 void allocMemSEG(memP*, processP, int);
 void orderHighLow(processP);
 spaceP getFront(spaceP);
-void subdivideHeap(memP*, processP, int, int);
+void subdivideHeap(memP*, processP, int);
 void printHeap(memP);
 void printStatus(long,int*,int,processP);
 void printMM(memP);
