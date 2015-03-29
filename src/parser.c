@@ -5,13 +5,6 @@
 #include <stdint.h>
 
 /////COMMENTS
-///// Alot of the information in here needs to be available in main
-///// such as device count, process count, etc
-///// We could either return a bunch of information by reference,
-///// or just return a nicely packaged struct.  I decided option 2.
-///// Compile and run the test cases and you'll see it still works.
-///// This way, we can return anything else we might need just by 
-///// adding it into the "ParserOutput" struct
 
 ParserOutputP parser(char* fName){
 
@@ -135,8 +128,10 @@ spaceP insertSpace(spaceP p, int x){
   t->next = NULL;
   if(end!=NULL){
     end->next = t;
+    t->prev = end;
     return p;
   }
+  t->prev = NULL;
   return t;
 }
 
