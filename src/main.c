@@ -252,15 +252,13 @@ tempHeapP allocMemPAG(memP *heap, processP proc, int memSize){
 
   }  
 
-
-
   tempPageIndex = tempPageHead;
   if(pagesFound == pagesRequired){
     while(tempPageIndex != NULL){
       tempPageIndex->memBlock->proc = proc;
       tempPageIndex = tempPageIndex->next;
     }
-
+    proc->blocks = tempPageHead;
     return tempPageHead;
 
   } else {
@@ -274,6 +272,7 @@ tempHeapP allocMemPAG(memP *heap, processP proc, int memSize){
 
       free(tempPageIndex);
 
+      proc->blocks = NULL;
       return NULL;
     }
   } 

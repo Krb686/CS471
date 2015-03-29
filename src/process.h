@@ -10,14 +10,6 @@ typedef struct space{
 }spaceR, *spaceP;
 #endif
 
-#ifndef PROCESS_STRUCT
-#define PROCESS_STRUCT
-typedef struct process{
-  struct process *next, *prev;
-  spaceP space;
-  int pid, aTime, deadline;
-}processR, *processP;
-#endif
 
 #ifndef MEM_STRUCT
 #define MEM_STRUCT
@@ -35,6 +27,17 @@ typedef struct tempHeap{
   struct m *memBlock;
 } tempHeapR, *tempHeapP;
 #endif
+
+#ifndef PROCESS_STRUCT
+#define PROCESS_STRUCT
+typedef struct process{
+  struct process *next, *prev;
+  spaceP space;
+  int pid, aTime, deadline;
+  struct tempHeap *blocks;
+}processR, *processP;
+#endif
+
 
 //Function prototypes
 void printP(processP);
