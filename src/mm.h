@@ -7,7 +7,7 @@ typedef struct m{
 }memR, *memP;
 
 
-typedef struct tempPage{
-  struct tempPage *next;
-  struct m *memP;
-} tempPageR, *tempPageP;
+typedef struct tempHeap{
+  struct tempHeap *next, prev;
+  struct m *memBlock;
+} tempHeapR, *tempHeapP;

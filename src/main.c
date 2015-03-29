@@ -146,10 +146,10 @@ memP initMem(int size, int policy, int param){
 int allocMem(memP *heap, processP proc, int memSize){
   if((*heap)->policy == 0){
     return allocMemVSP(heap, proc, memSize);
-  //} else if((*heap)->policy == 1){
-    //allocMemPAG(heap, proc, memSize);
-  //} else if((*heap)->policy == 2){
-    //allocMemSEG(heap, proc, memSize);
+  } else if((*heap)->policy == 1){
+    allocMemPAG(heap, proc, memSize);
+  } else if((*heap)->policy == 2){
+    allocMemSEG(heap, proc, memSize);
   }
 }
 
@@ -158,6 +158,7 @@ int allocMemVSP(memP *heap, processP proc, int memSize){
   int requiredSize = proc->space->x;
   memP t = *heap;
   int heapSize = 0;
+
   //First fit
   if(param == 0){
     int locFound = 0;
@@ -222,15 +223,15 @@ int allocMemVSP(memP *heap, processP proc, int memSize){
   }
 
 }
-/*
-void allocMemPAG(memP *heap, processP proc){
+
+void allocMemPAG(memP *heap, processP proc, int memSize){
   memP t = *heap;
-  tempPageP tempPageIndex = malloc(sizeof(tempPageR));
+  tempHeapP tempPageIndex = malloc(sizeof(tempHeapR));
   tempPageIndex->next = NULL;
   tempPageIndex->prev = NULL;
   tempPageIndex->memBlock = NULL;
 
-  tempPageP tempPageHead = tempPageIndex;
+  tempHeapP tempPageHead = tempPageIndex;
 
   int pageSize = t->param;
   int pagesRequired = (proc->space->x / pageSize) + 1;
@@ -245,10 +246,12 @@ void allocMemPAG(memP *heap, processP proc){
       if(pagesFound == 1){
         tempPageIndex->memBlock = t;
       } else if(pagesFound > 1) {
-        tempPageP tempPage = malloc(sizeof(tempPageR));
+        tempHeapP tempPage = malloc(sizeof(tempHeapR));
         tempPage->memBlock = t;
-        tempPageIndex->next = tempPage;
+        tempPage->next = NULL;
         tempPage->prev = tempPageIndex;
+
+        tempPageIndex->next = tempPage;
         tempPageIndex = tempPageIndex->next;
       }
     }
@@ -278,11 +281,71 @@ void allocMemPAG(memP *heap, processP proc){
 
 }
 
-void allocMemSEG(memP *heap, processP proc){
+void allocMemSEG(memP *heap, processP proc, int memSize){
+  int param = (*heap)->param;
+  int requiredSize;
+  memP localHeap = *heap;
+  spaceP currentSpace = proc->space;
 
+  tempHeapP tempSegIndex = malloc(sizeof(tempHeapR));
+  tempSegIndex->next = NULL;
+  tempSegIndex->prev = NULL;
+  tempSegIndex->memBlock = NULL;
+
+  tempHeapP tempSegHead = tempSegIndex;
+
+  int heapSize = 0;
+  int allLocsFound = 0;
+  int numSegsFound = 0;
+  
+  //First fit
+  if(param == 0){
+  
+    while((allLocsFound == 0) && (localHeap != NULL)){
+      requiredSize = currentSpace->x;
+      heapSize = localHeap->size;
+
+      //If the current heap block is free and is large enough
+      if(localHeap->proc == NULL && heapSize >= requiredSize){
+        numSegsFound++;
+
+        if(numSegsFound == 1){
+          tempSegIndex->memBlock = localHeap;
+        } else if(numSegsFound > 1){
+          tempHeapP tempSeg = malloc(sizeof(tempHeapR));
+          tempSeg->memBlock = localHeap;
+          tempSeg->next = NULL;
+          tempSeg->prev = tempSegIndex;
+          tempSegIndex->next = tempSeg;
+          tempSegIndex = tempSegIndex->next;
+        }
+        currentSpace = currentSpace->next;
+
+        if(currentSpace == NULL){
+          locsFound = 1;
+        }
+      }
+      localHeap = localHeap->next;
+    }
+
+  //Best fit
+  else if(param == 1){
+
+  //Worst fit
+  else if(param == 2){
+
+  }
+
+  //If successfully found enough blocks
+  if(currentSpace == NULL){
+
+  } else {
+
+  }
 
 }
-*/
+
+
 void subdivideHeap(memP *heap, processP proc, int heapSize, int requiredSize){
   if(heapSize != requiredSize){
     memP newHeapBlock = malloc(sizeof(memR));
@@ -302,6 +365,66 @@ void subdivideHeap(memP *heap, processP proc, int heapSize, int requiredSize){
   } else {
     (*heap)->proc = proc;
   }
+}
+
+void orderHighLow(processP proc){
+  spaceP spaceIndex    = proc->space;
+  spaceP spaceIterator = proc->space;
+  spaceP largestSpace  = NULL;
+  spaceP swapSpace     = NULL;
+
+  int highestSize; 
+
+  while(spaceIndex != NULL){
+    
+    spaceIterator = spaceIndex;
+    highestSize = 0;
+    while(spaceIterator != NULL){
+      if(spaceIterator->x > highestSize){
+        highestSize = spaceIterator->x;
+        largestSpace = spaceIterator;
+      }
+
+      spaceIterator = spaceIterator->next;
+    }
+
+    swapSpace = spaceIndex;
+    if(spaceIndex->prev != NULL){
+      spaceIndex->prev->next = largestSpace;
+    }
+    
+    if(spaceIndex->next != NULL){
+      spaceIndex->next->prev = largestSpace;
+    }
+
+    if(largestSpace->prev != NULL){
+      largestSpace->prev->next = spaceIndex;
+    }
+
+    if(largestSpace->next != NULL){
+      largestSpace->next->prev = spaceIndex;
+    }
+
+    spaceIndex->prev = largestSpace->prev;
+    spaceIndex->next = largestSpace->next;
+
+    largestSpace->prev = swapSpace->prev;
+    largestSpace->next = swapSpace->next; 
+    
+    spaceIndex = largestSpace->next;
+  }
+
+  spaceP head = getFront(largestSpace);
+
+  proc->space = head;
+}
+
+spaceP getFront(spaceP){
+  while(spaceP->prev != NULL){
+    spaceP = spaceP->prev;
+  }
+
+  return spaceP;
 }
 
 void printHeap(memP heap){

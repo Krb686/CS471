@@ -5,7 +5,7 @@
 #ifndef SPACE_STRUCT
 #define SPACE_STRUCT
 typedef struct space{
-  struct space *next;
+  struct space *next, *prev;
   int x;
 }spaceR, *spaceP;
 #endif
