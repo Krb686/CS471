@@ -354,6 +354,66 @@ void subdivideHeap(memP *heap, processP proc, int heapSize, int requiredSize){
   }
 }
 
+void orderHighLow(processP proc){
+  spaceP spaceIndex    = proc->space;
+  spaceP spaceIterator = proc->space;
+  spaceP largestSpace  = NULL;
+  spaceP swapSpace     = NULL;
+
+  int highestSize; 
+
+  while(spaceIndex != NULL){
+    
+    spaceIterator = spaceIndex;
+    highestSize = 0;
+    while(spaceIterator != NULL){
+      if(spaceIterator->x > highestSize){
+        highestSize = spaceIterator->x;
+        largestSpace = spaceIterator;
+      }
+
+      spaceIterator = spaceIterator->next;
+    }
+
+    swapSpace = spaceIndex;
+    if(spaceIndex->prev != NULL){
+      spaceIndex->prev->next = largestSpace;
+    }
+    
+    if(spaceIndex->next != NULL){
+      spaceIndex->next->prev = largestSpace;
+    }
+
+    if(largestSpace->prev != NULL){
+      largestSpace->prev->next = spaceIndex;
+    }
+
+    if(largestSpace->next != NULL){
+      largestSpace->next->prev = spaceIndex;
+    }
+
+    spaceIndex->prev = largestSpace->prev;
+    spaceIndex->next = largestSpace->next;
+
+    largestSpace->prev = swapSpace->prev;
+    largestSpace->next = swapSpace->next; 
+    
+    spaceIndex = largestSpace->next;
+  }
+
+  spaceP head = getFront(spaceIndex->prev);
+
+  proc->space = head;
+}
+
+spaceP getFront(spaceP){
+  while(spaceP->prev != NULL){
+    spaceP = spaceP->prev;
+  }
+
+  return spaceP;
+}
+
 void printHeap(memP heap){
   printf("[");
   while(heap!=NULL){
