@@ -262,20 +262,15 @@ tempHeapP allocMemPAG(memP *heap, processP proc, int memSize){
     return tempPageHead;
 
   } else {
-    if(tempPageIndex->next == NULL){
-      free(tempPageIndex);
-    } else {
-      while(tempPageIndex->next != NULL){
-        tempPageIndex = tempPageIndex->next;
-        free(tempPageIndex->prev);
-      }
-
-      free(tempPageIndex);
-
-      return NULL;
+    while(tempPageIndex->next != NULL){
+      tempPageIndex = tempPageIndex->next;
+      free(tempPageIndex->prev);
     }
-  } 
 
+    free(tempPageIndex);
+
+    return NULL;
+  }
 }
 
 tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
@@ -297,7 +292,8 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
   
   //First fit
   if(param == 0){
-  
+ 
+    //While not enough segments have been found and there are more heap blocks to check 
     while((allLocsFound == 0) && (localHeap != NULL)){
       requiredSize = currentSpace->x;
       heapSize = localHeap->size;
@@ -318,11 +314,33 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
         }
         currentSpace = currentSpace->next;
 
+        //If all the proc spaces have been found, everything is done
         if(currentSpace == NULL){
           allLocsFound = 1;
         }
       }
       localHeap = localHeap->next;
+    }
+
+    tempSegIndex = tempSegHead;
+    if(allLocsFound == 1){
+      while(tempSegIndex != NULL){
+        tempSegIndex->memBlock->proc = proc;
+        tempSegIndex = tempSegIndex->next;
+      }
+
+      proc->blocks = tempSegHead;
+
+      return tempSegHead;
+    } else {
+      while(tempSegIndex->next != NULL){
+        tempSegIndex = tempSegIndex->next;
+        free(tempSegIndex->prev);
+      }
+
+      free(tempSegIndex);      
+
+      return NULL;
     }
 
   //Best fit
