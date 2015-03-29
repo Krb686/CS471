@@ -58,7 +58,7 @@ ParserOutputP parser(char* fName){
         ret->count++;
         ret->PID0 = pid0;
       }
-      else if(strstr(line,"Arrival time: ")!=NULL){
+      else if(strstr(line,"Arrival Time: ")!=NULL){
         pid9->aTime=atoi(line+14);
       }
       else if(strstr(line,"Lifetime in Memory: ")!=NULL){

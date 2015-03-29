@@ -9,25 +9,26 @@ int main(int argc, char* argv[]){
   ParserOutputP ret = parser(argv[1]);
   processP unQed = ret->PID0;
   
-  printf("Memory Size: %d\n",ret->memSize);
+  /*printf("Memory Size: %d\n",ret->memSize);
   printf("Memory Management Policy: %d\n",ret->policy);
   printf("Policy Parameter: %d\n\n",ret->param);
-  //printP(unQed);
+  printP(unQed);*/
 
   processP inQ = NULL;
   processP i = NULL;
   long clk = 0;
-  int done = 0, tprint=0;
+  int done = 0, tprint=0, avgLife=0;
 
   //this function will initialize the heap according to size and policy
   memP heap = initMem(ret->memSize,ret->policy,ret->param);
 
-  while(clk<3000){
+  while(!done){
+    tprint = 0;
     //traverse mem checking all processes for end of life
-    heap = sweepMem(clk,heap);//mem_ptr should have processP field
+    heap = sweepMem(clk,&tprint,heap);
     while(unQed!=NULL && unQed->aTime == clk){
-      popQ2Q(&unQed,&inQ);//finished
-      //printStatus(ARRIVAL,inQ)//print formatted status
+      popQ2Q(&unQed,&inQ);
+      printStatus(clk, &tprint, ARRIVAL, inQ);//print formatted status
     }
 
     i = inQ;
@@ -35,10 +36,15 @@ int main(int argc, char* argv[]){
     while(i!=NULL){
       //can prob make one func that calls memcheck first
       if(allocMem(&heap, i, ret->memSize)){
+        printf("\t\tMM moves Process %d to memory\n",i->pid);
+//        printStatus(clk, &tprint, ALLOC1, i);
+        i->deadline += clk;
+        avgLife += i->deadline - i->aTime;
         popN(&i);
         if(update) inQ = i;
-        printHeap(heap);
-        printP(inQ);
+        printStatus(clk, &tprint, ALLOC, inQ);
+        printMM(heap);
+        //printHeap(heap);
       }
       else{
         update = 0;
@@ -47,23 +53,28 @@ int main(int argc, char* argv[]){
       }
       //printStatus(ADMIT,inQ)//print formatted status
     }
+    if(inQ==NULL&&unQed==NULL&&heap->size==ret->memSize&&
+       heap->proc==NULL) done = 1;
     clk++;
   }
+  printf("\nAverage Turnaround Time: %4.2f\n",
+        (float)avgLife/ret->count);
 }
 
-memP sweepMem(int clk, memP heap){
+memP sweepMem(long clk, int *tprint, memP heap){
   if(heap==NULL) return heap;
   if(heap->proc != NULL && heap->proc->deadline == clk){
+    printStatus(clk, tprint, DONE, heap->proc);
     removeProc(&heap);
-    memP t = sweepMem(clk, heap->next);
+    memP t = heap;
+    while(t->prev!=NULL) t = t->prev;
+    printMM(t);
+    t = sweepMem(clk, tprint, heap->next);
     if(t!=heap) heap->next = t;
-    //heap->next = sweepMem(clk, heap->next);
     return heap;
   }
-  memP t = sweepMem(clk, heap->next);
+  memP t = sweepMem(clk, tprint, heap->next);
   if(t!=heap) heap->next = t;
-  //heap->next = sweepMem(clk, heap->next);
-  //if(clk==1900) printf("size:%d",heap->size);
   return heap;
 }
 
@@ -282,7 +293,9 @@ void subdivideHeap(memP *heap, processP proc, int heapSize, int requiredSize){
     newHeapBlock->next = (*heap)->next;
     newHeapBlock->prev = *heap;
     newHeapBlock->size = heapSize - requiredSize;
-
+    if(newHeapBlock->next != NULL){
+      newHeapBlock->next->prev = newHeapBlock;
+    }
     (*heap)->proc = proc;
     (*heap)->next = newHeapBlock;
     (*heap)->size = requiredSize;
@@ -300,4 +313,52 @@ void printHeap(memP heap){
     if(heap!=NULL) printf("|");
     else printf("]\n");
   }
+}
+
+void printStatus(long clk, int *tprint, int status, processP p){
+  if(!(*tprint)){
+    printf("\nt = %ld:\t",clk);
+    if(clk<100) printf("\t");
+    *tprint = 1;
+  }
+  else printf("\t\t");
+  if(status == ARRIVAL){
+    printf("Process %d arrives\n",lastP(p)->pid);
+    printf("\t\tInput Queue: ");
+    printQueue(p);
+  }
+//  else if(status == ALLOC1){
+//    printf("MM moves Process %d to memory\n", p->pid);
+//  }
+  else if(status == ALLOC){
+    printf("Input Queue: ");
+    printQueue(p);
+  }
+  else if(status == DONE){
+    printf("Process %d completes\n",p->pid);
+  }
+}
+
+void printMM(memP heap){
+  printf("\t\tMemory Map:\t");
+  while(heap!=NULL){
+    printf("%d-%d: ",heap->addr,heap->addr+heap->size-1);
+    if(heap->proc==NULL) printf("Hole");
+    else printf("Process %d",heap->proc->pid);
+    heap = heap->next;
+    printf("\n");
+    if(heap!=NULL) printf("\t\t\t\t");
+  }
+}
+
+void printQueue(processP Q){
+  printf("[");
+  while(Q!=NULL){
+    printf("Process %d",Q->pid);
+    if(Q->next!=NULL){
+      printf(", ");
+    }
+    Q = Q->next;
+  }
+  printf("]\n");
 }
