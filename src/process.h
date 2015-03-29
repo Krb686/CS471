@@ -2,6 +2,8 @@
 #define PAG	1
 #define SEG	2
 
+struct space; struct tempHeap; struct process; struct m;
+
 #ifndef SPACE_STRUCT
 #define SPACE_STRUCT
 typedef struct space{
@@ -10,22 +12,12 @@ typedef struct space{
 }spaceR, *spaceP;
 #endif
 
-
-#ifndef MEM_STRUCT
-#define MEM_STRUCT
-typedef struct m{
-  processP proc;
-  struct m *next, *prev;
-  int size, addr, policy, param;
-}memR, *memP;
-#endif
-
 #ifndef TEMP_HEAP_STRUCT
 #define TEMP_HEAP_STRUCT
 typedef struct tempHeap{
   struct tempHeap *next, *prev;
   struct m *memBlock;
-} tempHeapR, *tempHeapP;
+}tempHeapR, *tempHeapP;
 #endif
 
 #ifndef PROCESS_STRUCT
@@ -38,6 +30,14 @@ typedef struct process{
 }processR, *processP;
 #endif
 
+#ifndef MEM_STRUCT
+#define MEM_STRUCT
+typedef struct m{
+  processP proc;
+  struct m *next, *prev;
+  int size, addr, policy, param;
+}memR, *memP;
+#endif
 
 //Function prototypes
 void printP(processP);
