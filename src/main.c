@@ -85,30 +85,46 @@ memP sweepMem(long clk, int *tprint, memP heap){
 //heap->proc should never be null
 void removeProc(memP *heap){
   memP t = (*heap);
-  free(t->proc->space);
-  free(t->proc);
+  int policy = t->policy;
+  tempHeapP pageIter = NULL;
+
+  free(t->proc->space);//fix for SEG
+  if(policy==PAG){
+    pageIter = t->proc->blocks;
+    free(t->proc);
+    do{
+      t = pageIter->memBlock;
+      t->proc = NULL;
+      pageIter = pageIter->next;
+    }while(pageIter!=NULL);
+  }
+  else{
   t->proc = NULL;
-  if(t->prev!=NULL && t->prev->proc==NULL){
-    t = t->prev;
-    t->size += t->next->size;
-    if(t->next->next!=NULL && t->next->next->proc==NULL){
-      t->size += t->next->next->size;
-      t->next = t->next->next->next;
-      free((*heap)->next);
+//  do{
+    if(t->prev!=NULL && t->prev->proc==NULL){
+      t = t->prev;
+      t->size += t->next->size;
+      if(t->next->next!=NULL && t->next->next->proc==NULL){
+        t->size += t->next->next->size;
+        t->next = t->next->next->next;
+        free((*heap)->next);
+      }
+      else if(t->next->next==NULL) t->next = NULL;
+      else t->next = t->next->next;
+      free(*heap);
     }
-    else if(t->next->next==NULL) t->next = NULL;
-    else t->next = t->next->next;
-    free(*heap);
+    else if(t->next!=NULL && t->next->proc==NULL){
+      t = t->next;
+      (*heap)->size += t->size;
+      (*heap)->next = t->next;
+      free(t);
+      t = (*heap);
+    }
+    if(t->next!=NULL) t->next->prev = t;
+    *heap = t;
+    if(pageIter!=NULL) pageIter = pageIter->next;
+//  }while(pageIter!=NULL);
   }
-  else if(t->next!=NULL && t->next->proc==NULL){
-    t = t->next;
-    (*heap)->size += t->size;
-    (*heap)->next = t->next;
-    free(t);
-    t = (*heap);
-  }
-  if(t->next!=NULL) t->next->prev = t;
-  *heap = t;
 }
 
 void popQ2Q(processP *unQ, processP *Q){
