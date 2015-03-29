@@ -34,24 +34,28 @@ int main(int argc, char* argv[]){
     i = inQ;
     int update = 1;
     while(i!=NULL){
-      //can prob make one func that calls memcheck first
-      if(allocMem(&heap, i, ret->memSize)){
+      tempHeapP tempHeap = NULL;
+      int success = 0;
+      if(heap->policy == 0){
+        success = allocMemVSP(&heap, i, ret->memSize);
+      } else if(heap->policy == 1){
+        tempHeap = allocMemPAG(&heap, i, ret->memSize);
+      } else if(heap->policy == 2){
+        tempHeap = allocMemSEG(&heap, i, ret->memSize);
+      }
+      if(tempHeap!=NULL|success>0){//need to add tempHeap to proc
         printf("\t\tMM moves Process %d to memory\n",i->pid);
-//        printStatus(clk, &tprint, ALLOC1, i);
         i->deadline += clk;
         avgLife += i->deadline - i->aTime;
         popN(&i);
         if(update) inQ = i;
         printStatus(clk, &tprint, ALLOC, inQ);
         printMM(heap);
-        //printHeap(heap);
       }
       else{
         update = 0;
-        //printf("i->next:%p\n",i->next);
         i = i->next;
       }
-      //printStatus(ADMIT,inQ)//print formatted status
     }
     if(inQ==NULL&&unQed==NULL&&heap->size==ret->memSize&&
        heap->proc==NULL) done = 1;
@@ -141,18 +145,6 @@ memP initMem(int size, int policy, int param){
   return t;
 }
 
-
-
-int allocMem(memP *heap, processP proc, int memSize){
-  if((*heap)->policy == 0){
-    return allocMemVSP(heap, proc, memSize);
-  } else if((*heap)->policy == 1){
-    allocMemPAG(heap, proc, memSize);
-  } else if((*heap)->policy == 2){
-    allocMemSEG(heap, proc, memSize);
-  }
-}
-
 int allocMemVSP(memP *heap, processP proc, int memSize){
   int param = (*heap)->param;
   int requiredSize = proc->space->x;
@@ -224,7 +216,7 @@ int allocMemVSP(memP *heap, processP proc, int memSize){
 
 }
 
-void allocMemPAG(memP *heap, processP proc, int memSize){
+tempHeapP allocMemPAG(memP *heap, processP proc, int memSize){
   memP t = *heap;
   tempHeapP tempPageIndex = malloc(sizeof(tempHeapR));
   tempPageIndex->next = NULL;
@@ -260,12 +252,17 @@ void allocMemPAG(memP *heap, processP proc, int memSize){
 
   }  
 
+
+
   tempPageIndex = tempPageHead;
   if(pagesFound == pagesRequired){
     while(tempPageIndex != NULL){
       tempPageIndex->memBlock->proc = proc;
       tempPageIndex = tempPageIndex->next;
-    } 
+    }
+
+    return tempPageHead;
+
   } else {
     if(tempPageIndex->next == NULL){
       free(tempPageIndex);
@@ -276,12 +273,14 @@ void allocMemPAG(memP *heap, processP proc, int memSize){
       }
 
       free(tempPageIndex);
+
+      return NULL;
     }
   } 
 
 }
 
-void allocMemSEG(memP *heap, processP proc, int memSize){
+tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
   int param = (*heap)->param;
   int requiredSize;
   memP localHeap = *heap;

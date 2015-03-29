@@ -1,5 +1,4 @@
 #include "parser.h"
-#include "mm.h"
 
 #define ARRIVAL	1
 #define ALLOC	2
@@ -11,10 +10,9 @@ void removeProc(memP*);
 void popQ2Q(processP*, processP*);
 void popN(processP*);
 memP initMem(int,int,int);
-int allocMem(memP*, processP, int);
 int allocMemVSP(memP*, processP, int);
-void allocMemPAG(memP*, processP, int);
-void allocMemSEG(memP*, processP, int);
+tempHeapP allocMemPAG(memP*, processP, int);
+tempHeapP allocMemSEG(memP*, processP, int);
 void orderHighLow(processP);
 spaceP getFront(spaceP);
 void subdivideHeap(memP*, processP, int);

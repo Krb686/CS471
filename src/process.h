@@ -19,5 +19,22 @@ typedef struct process{
 }processR, *processP;
 #endif
 
+#ifndef MEM_STRUCT
+#define MEM_STRUCT
+typedef struct m{
+  processP proc;
+  struct m *next, *prev;
+  int size, addr, policy, param;
+}memR, *memP;
+#endif
+
+#ifndef TEMP_HEAP_STRUCT
+#define TEMP_HEAP_STRUCT
+typedef struct tempHeap{
+  struct tempHeap *next, *prev;
+  struct m *memBlock;
+} tempHeapR, *tempHeapP;
+#endif
+
 //Function prototypes
 void printP(processP);
