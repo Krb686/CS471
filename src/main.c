@@ -401,7 +401,7 @@ void orderHighLow(processP proc){
     spaceIndex = largestSpace->next;
   }
 
-  spaceP head = getFront(spaceIndex->prev);
+  spaceP head = getFront(largestSpace);
 
   proc->space = head;
 }
