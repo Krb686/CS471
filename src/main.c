@@ -272,7 +272,6 @@ tempHeapP allocMemPAG(memP *heap, processP proc, int memSize){
 
       free(tempPageIndex);
 
-      proc->blocks = NULL;
       return NULL;
     }
   } 

@@ -113,6 +113,7 @@ processP insertP(processP p, int pid){
   t->prev = end;
   t->pid = pid;
   t->next = NULL;
+  t->blocks = NULL;
   if(end!=NULL){
     end->next = t;
     return p;
