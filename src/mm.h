@@ -8,6 +8,6 @@ typedef struct m{
 
 
 typedef struct tempHeap{
-  struct tempHeap *next, prev;
+  struct tempHeap *next, *prev;
   struct m *memBlock;
 } tempHeapR, *tempHeapP;

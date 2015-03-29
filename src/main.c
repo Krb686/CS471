@@ -272,7 +272,7 @@ void allocMemPAG(memP *heap, processP proc, int memSize){
     } else {
       while(tempPageIndex->next != NULL){
         tempPageIndex = tempPageIndex->next;
-        free(tempPageIndex->prev;
+        free(tempPageIndex->prev);
       }
 
       free(tempPageIndex);
@@ -322,17 +322,17 @@ void allocMemSEG(memP *heap, processP proc, int memSize){
         currentSpace = currentSpace->next;
 
         if(currentSpace == NULL){
-          locsFound = 1;
+          allLocsFound = 1;
         }
       }
       localHeap = localHeap->next;
     }
 
   //Best fit
-  else if(param == 1){
+  } else if(param == 1){
 
   //Worst fit
-  else if(param == 2){
+  } else if(param == 2){
 
   }
 
@@ -419,12 +419,12 @@ void orderHighLow(processP proc){
   proc->space = head;
 }
 
-spaceP getFront(spaceP){
-  while(spaceP->prev != NULL){
-    spaceP = spaceP->prev;
+spaceP getFront(spaceP p){
+  while(p->prev != NULL){
+    p = p->prev;
   }
 
-  return spaceP;
+  return p;
 }
 
 void printHeap(memP heap){
