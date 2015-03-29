@@ -15,32 +15,39 @@ int main(int argc, char* argv[]){
   //printP(unQed);
 
   processP inQ = NULL;
+  processP i = NULL;
   long clk = 0;
-  int done = 0;
-  int pass= 0;
+  int done = 0, tprint=0;
 
   //this function will initialize the heap according to size and policy
-  memP heap = initMem(ret->memSize,ret->policy, ret->param);
+  memP heap = initMem(ret->memSize,ret->policy,ret->param);
 
-  while(!done){
+  while(clk<3000){
     //traverse mem checking all processes for end of life
-    heap = sweepMem(clk,inQ,heap)//mem_ptr should have processP field
-
+    heap = sweepMem(clk,heap);//mem_ptr should have processP field
     while(unQed!=NULL && unQed->aTime == clk){
-      pop(&unQed,&inQ);//finished
-      printStatus(ARRIVAL,inQ)//print formatted status
+      popQ2Q(&unQed,&inQ);//finished
+      //printStatus(ARRIVAL,inQ)//print formatted status
     }
 
     i = inQ;
+    int update = 1;
     while(i!=NULL){
       //can prob make one func that calls memcheck first
-      allocMem(&heap, i, ret->memSize);
-      printStatus(ADMIT,inQ)//print formatted status
-      i = i->next;
+      if(allocMem(&heap, i, ret->memSize)){
+        popN(&i);
+        if(update) inQ = i;
+        printHeap(heap);
+        printP(inQ);
+      }
+      else{
+        update = 0;
+        //printf("i->next:%p\n",i->next);
+        i = i->next;
+      }
+      //printStatus(ADMIT,inQ)//print formatted status
     }
-
     clk++;
-    done = 1;//temp. Can prob use (inQ==NULL && unQed==NULL) instead
   }
 }
 
@@ -48,10 +55,15 @@ memP sweepMem(int clk, memP heap){
   if(heap==NULL) return heap;
   if(heap->proc != NULL && heap->proc->deadline == clk){
     removeProc(&heap);
-    heap->next = sweepMem(clk, heap->next);
+    memP t = sweepMem(clk, heap->next);
+    if(t!=heap) heap->next = t;
+    //heap->next = sweepMem(clk, heap->next);
     return heap;
   }
-  heap->next = sweepMem(clk, heap->next);
+  memP t = sweepMem(clk, heap->next);
+  if(t!=heap) heap->next = t;
+  //heap->next = sweepMem(clk, heap->next);
+  //if(clk==1900) printf("size:%d",heap->size);
   return heap;
 }
 
@@ -61,29 +73,30 @@ void removeProc(memP *heap){
   free(t->proc->space);
   free(t->proc);
   t->proc = NULL;
-  if(t->prev!=NULL){
+  if(t->prev!=NULL && t->prev->proc==NULL){
     t = t->prev;
-    t->size += t->next->size
-    if(t->next->next!=NULL){
+    t->size += t->next->size;
+    if(t->next->next!=NULL && t->next->next->proc==NULL){
       t->size += t->next->next->size;
       t->next = t->next->next->next;
       free((*heap)->next);
     }
-    else t->next = NULL;
+    else if(t->next->next==NULL) t->next = NULL;
+    else t->next = t->next->next;
     free(*heap);
   }
-  else if(t->next!=NULL){
+  else if(t->next!=NULL && t->next->proc==NULL){
     t = t->next;
     (*heap)->size += t->size;
     (*heap)->next = t->next;
-    free(t)
+    free(t);
     t = (*heap);
   }
   if(t->next!=NULL) t->next->prev = t;
   *heap = t;
 }
 
-void pop(processP *unQ, processP *Q){
+void popQ2Q(processP *unQ, processP *Q){
   processP t = *unQ;
   processP lQ = lastP(*Q);
   if(t->next!=NULL) t->next->prev = NULL;
@@ -94,9 +107,19 @@ void pop(processP *unQ, processP *Q){
   else lQ->next = t;
 }
 
+//p should never be null
+void popN(processP *p){
+  processP t = *p;
+  *p = t->next;
+  if(t->next!=NULL) t->next->prev = t->prev;
+  if(t->prev!=NULL) t->prev->next = t->next;
+  t->next = NULL;
+  t->prev = NULL;
+}
+
 //this function will initialize the heap according to size and policy
 memP initMem(int size, int policy, int param){
-  memP t = malloc(sizeof(memP));
+  memP t = malloc(sizeof(memR));
   t->size = size;
   t->addr = 0;
   t->policy = policy;
@@ -109,45 +132,45 @@ memP initMem(int size, int policy, int param){
 
 
 
-void allocMem(memP *heap, processP proc, int memSize){
+int allocMem(memP *heap, processP proc, int memSize){
   if((*heap)->policy == 0){
-    allocMemVSP(heap, proc, memSize);
-  } else if((*heap)->policy == 1){
-    allocMemPAG(heap, proc, memSize);
-  } else if((*heap)->policy == 2){
-    allocMemSEG(heap, proc, memSize);
+    return allocMemVSP(heap, proc, memSize);
+  //} else if((*heap)->policy == 1){
+    //allocMemPAG(heap, proc, memSize);
+  //} else if((*heap)->policy == 2){
+    //allocMemSEG(heap, proc, memSize);
   }
 }
 
-void allocMemVSP(memP *heap, processP proc, int memSize){
+int allocMemVSP(memP *heap, processP proc, int memSize){
   int param = (*heap)->param;
   int requiredSize = proc->space->x;
   memP t = *heap;
-  
+  int heapSize = 0;
   //First fit
   if(param == 0){
     int locFound = 0;
 
     while((locFound == 0) && (t != NULL)){
-      int heapSize = t->size;
-
+      heapSize = t->size;
       if(t->proc == NULL && (heapSize >= requiredSize)){
         locFound = 1;
-        subdivideHeap(&t, heapSize, requiredSize);
+        subdivideHeap(&t, proc, heapSize, requiredSize);
       } else {
         t = t->next;
       }
       
     }
+  return locFound;
 
   //Best fit
   } else if(param == 1){
     int smallestSize = memSize + 1;
-    memP smallestBlock = heap;
+    memP smallestBlock = t;
 
     while(t != NULL){
+      heapSize = t->size;
       if(t->proc == NULL){
-        int heapSize = t->size;
         
         if(heapSize >= requiredSize && heapSize < smallestSize){
           smallestSize = heapSize;
@@ -157,9 +180,11 @@ void allocMemVSP(memP *heap, processP proc, int memSize){
 
       t = t->next;
     }
-
-    subdivideHeap(&smallestBlock, heapSize, requiredSize);
-
+    if(smallestSize != memSize+1){
+      subdivideHeap(&smallestBlock, proc, heapSize, requiredSize);
+      return 1;
+    }
+    else return 0;
 
   //Worst fit
   } else if(param == 2){
@@ -167,8 +192,8 @@ void allocMemVSP(memP *heap, processP proc, int memSize){
     memP largestBlock = t;
 
     while(t!=NULL){
-      if(t->status == 0){
-        int heapSize = t->size;
+      heapSize = t->size;
+      if(t->proc == NULL){
 
         if(heapSize >= requiredSize && heapSize > largestSize){
           largestSize = heapSize;
@@ -178,13 +203,15 @@ void allocMemVSP(memP *heap, processP proc, int memSize){
 
       t = t->next;
     }
-
-    subdivideHeap(&largestBlock, heapSize, requiredSize);
-
+    if(largestSize != 0){
+      subdivideHeap(&largestBlock, proc, heapSize, requiredSize);
+      return 1;
+    }
+    else return 0;
   }
 
 }
-
+/*
 void allocMemPAG(memP *heap, processP proc){
   memP t = *heap;
   tempPageP tempPageIndex = malloc(sizeof(tempPageR));
@@ -244,21 +271,33 @@ void allocMemSEG(memP *heap, processP proc){
 
 
 }
-
+*/
 void subdivideHeap(memP *heap, processP proc, int heapSize, int requiredSize){
   if(heapSize != requiredSize){
-    memP newHeapBlock = malloc(sizeof(memP));
+    memP newHeapBlock = malloc(sizeof(memR));
     newHeapBlock->proc = NULL;
-    newHeapBlock->addr = heap->addr + requiredSize;
-    newHeapBlock->param = heap->param;
-    newHeapBlock->next = heap->next;
-    newHeapBlock->prev = heap;
+    newHeapBlock->addr = (*heap)->addr + requiredSize;
+    newHeapBlock->param = (*heap)->param;
+    newHeapBlock->policy= (*heap)->policy;
+    newHeapBlock->next = (*heap)->next;
+    newHeapBlock->prev = *heap;
     newHeapBlock->size = heapSize - requiredSize;
 
-    heap->proc = proc;
-    heap->next = newHeapBlock;
-    heap->size = requiredSize;
+    (*heap)->proc = proc;
+    (*heap)->next = newHeapBlock;
+    (*heap)->size = requiredSize;
   } else {
-    heap->proc = proc;
+    (*heap)->proc = proc;
+  }
+}
+
+void printHeap(memP heap){
+  printf("[");
+  while(heap!=NULL){
+    if(heap->proc!=NULL) printf("X");
+    printf("%d",heap->size);
+    heap = heap->next;
+    if(heap!=NULL) printf("|");
+    else printf("]\n");
   }
 }

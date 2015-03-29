@@ -3,7 +3,7 @@
 #define SEG	2
 
 #ifndef SPACE_STRUCT
-#define SAPCE_STRUCT
+#define SPACE_STRUCT
 typedef struct space{
   struct space *next;
   int x;
