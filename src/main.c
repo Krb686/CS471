@@ -327,14 +327,22 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
           tempSegIndex->next = tempSeg;
           tempSegIndex = tempSegIndex->next;
         }
+
+        subdivideHeap(localHeap, proc, requiredSize);
+        localHeap = getFrontMem(localHeap);       
+
         currentSpace = currentSpace->next;
 
         //If all the proc spaces have been found, everything is done
         if(currentSpace == NULL){
           allLocsFound = 1;
         }
+      } else {
+        //This needs to be an else only condition because if a block is stored and 
+        //the heap gets subdivided, scanning for the next block needs to start
+        //from the beginning 
+        localHeap = localHeap->next;
       }
-      localHeap = localHeap->next;
     }
 
     tempSegIndex = tempSegHead;
@@ -445,16 +453,23 @@ void orderHighLow(processP proc){
     spaceIndex = largestSpace->next;
   }
 
-  spaceP head = getFront(largestSpace);
+  spaceP head = getFrontSpace(largestSpace);
 
   proc->space = head;
 }
 
-spaceP getFront(spaceP p){
+memP getFrontMem(memP p){
+  while(p->prev != NULL){
+    p = p->prev
+  }
+  return p;
+}
+
+
+spaceP getFrontSpace(spaceP p){
   while(p->prev != NULL){
     p = p->prev;
   }
-
   return p;
 }
 
