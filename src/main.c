@@ -17,15 +17,15 @@ int main(int argc, char* argv[]){
   processP inQ = NULL;
   processP i = NULL;
   long clk = 0;
-  int done = 0, tprint=0, avgLife=0;
+  int tprint=0, avgLife=0, count=ret->count;
 
   //this function will initialize the heap according to size and policy
   memP heap = initMem(ret->memSize,ret->policy,ret->param);
 
-  while(!done){
+  while(count>0){
     tprint = 0;
     //traverse mem checking all processes for end of life
-    heap = sweepMem(clk,&tprint,heap);
+    heap = sweepMem(clk,&count,&tprint,heap);
     while(unQed!=NULL && unQed->aTime == clk){
       popQ2Q(&unQed,&inQ);
       printStatus(clk, &tprint, ARRIVAL, inQ);//print formatted status
@@ -36,11 +36,11 @@ int main(int argc, char* argv[]){
     while(i!=NULL){
       tempHeapP tempHeap = NULL;
       int success = 0;
-      if(heap->policy == 0){
+      if(heap->policy == VSP){
         success = allocMemVSP(&heap, i, ret->memSize);
-      } else if(heap->policy == 1){
+      } else if(heap->policy == PAG){
         tempHeap = allocMemPAG(&heap, i, ret->memSize);
-      } else if(heap->policy == 2){
+      } else if(heap->policy == SEG){
         tempHeap = allocMemSEG(&heap, i, ret->memSize);
       }
       if(tempHeap!=NULL|success>0){//need to add tempHeap to proc
@@ -57,27 +57,26 @@ int main(int argc, char* argv[]){
         i = i->next;
       }
     }
-    if(inQ==NULL&&unQed==NULL&&heap->size==ret->memSize&&
-       heap->proc==NULL) done = 1;
     clk++;
   }
   printf("\nAverage Turnaround Time: %4.2f\n",
         (float)avgLife/ret->count);
 }
 
-memP sweepMem(long clk, int *tprint, memP heap){
+memP sweepMem(long clk, int *count, int *tprint, memP heap){
   if(heap==NULL) return heap;
   if(heap->proc != NULL && heap->proc->deadline == clk){
     printStatus(clk, tprint, DONE, heap->proc);
+    (*count)--;
     removeProc(&heap);
     memP t = heap;
     while(t->prev!=NULL) t = t->prev;
     printMM(t);
-    t = sweepMem(clk, tprint, heap->next);
+    t = sweepMem(clk, count, tprint, heap->next);
     if(t!=heap) heap->next = t;
     return heap;
   }
-  memP t = sweepMem(clk, tprint, heap->next);
+  memP t = sweepMem(clk, count, tprint, heap->next);
   if(t!=heap) heap->next = t;
   return heap;
 }

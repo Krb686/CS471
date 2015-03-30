@@ -5,7 +5,7 @@
 #define DONE	3
 
 int main(int, char*[]);
-memP sweepMem(long, int*, memP);
+memP sweepMem(long, int*, int*, memP);
 void removeProc(memP*);
 void popQ2Q(processP*, processP*);
 void popN(processP*);
