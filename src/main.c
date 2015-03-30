@@ -548,7 +548,7 @@ void printMM(memP heap){
     else if(heap->policy == PAG){
       if(heap->proc==NULL){
         int startMem = heap->addr;
-        while(heap->next != NULL) heap = heap->next;
+        while(heap->next!=NULL&&heap->next->proc==NULL) heap = heap->next;
         printf("%d-%d: ",startMem,heap->addr+heap->size-1);
         printf("Free frame(s)");
       }
