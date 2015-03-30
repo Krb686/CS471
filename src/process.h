@@ -17,6 +17,7 @@ typedef struct space{
 typedef struct tempHeap{
   struct tempHeap *next, *prev;
   struct m *memBlock;
+  int pNum;
 }tempHeapR, *tempHeapP;
 #endif
 
@@ -24,9 +25,9 @@ typedef struct tempHeap{
 #define PROCESS_STRUCT
 typedef struct process{
   struct process *next, *prev;
+  struct tempHeap *blocks;
   spaceP space;
   int pid, aTime, deadline;
-  struct tempHeap *blocks;
 }processR, *processP;
 #endif
 

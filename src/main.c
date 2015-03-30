@@ -149,15 +149,39 @@ void popN(processP *p){
 
 //this function will initialize the heap according to size and policy
 memP initMem(int size, int policy, int param){
-  memP t = malloc(sizeof(memR));
-  t->size = size;
-  t->addr = 0;
-  t->policy = policy;
-  t->param= param;
-  t->next = NULL;
-  t->prev = NULL;
-  t->proc = NULL;
-  return t;
+  if(policy==PAG){
+    int i, pagesRequired = (size / param);
+    memP old = NULL, head = NULL;
+
+    for(i=0; i<pagesRequired; i++){
+      memP t = malloc(sizeof(memR));
+      t->size = param;
+      t->policy = policy;
+      t->param = param;
+      t->next = NULL;
+      t->prev = old;
+      t->proc = NULL;
+      t->addr = 0;
+      if(old!=NULL){
+        old->next = t;
+        t->addr = old->size + old->addr;
+      }
+      else head = t;
+      old = t;
+    }
+    return head;
+  }
+  else{
+    memP t = malloc(sizeof(memR));
+    t->size = size;
+    t->addr = 0;
+    t->policy = policy;
+    t->param= param;
+    t->next = NULL;
+    t->prev = NULL;
+    t->proc = NULL;
+    return t;
+  }
 }
 
 int allocMemVSP(memP *heap, processP proc, int memSize){
@@ -241,7 +265,8 @@ tempHeapP allocMemPAG(memP *heap, processP proc, int memSize){
   tempHeapP tempPageHead = tempPageIndex;
 
   int pageSize = t->param;
-  int pagesRequired = (proc->space->x / pageSize) + 1;
+  int pagesRequired = (proc->space->x / pageSize);
+  if(proc->space->x%pageSize != 0) pagesRequired++;
   
 
   int pagesFound = 0;
@@ -252,9 +277,11 @@ tempHeapP allocMemPAG(memP *heap, processP proc, int memSize){
 
       if(pagesFound == 1){
         tempPageIndex->memBlock = t;
+        tempPageIndex->pNum = pagesFound;
       } else if(pagesFound > 1) {
         tempHeapP tempPage = malloc(sizeof(tempHeapR));
         tempPage->memBlock = t;
+        tempPage->pNum = pagesFound;
         tempPage->next = NULL;
         tempPage->prev = tempPageIndex;
 
@@ -328,7 +355,7 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
           tempSegIndex = tempSegIndex->next;
         }
 
-        subdivideHeap(localHeap, proc, requiredSize);
+        subdivideHeap(&localHeap, proc, requiredSize);
         localHeap = getFrontMem(localHeap);       
 
         currentSpace = currentSpace->next;
@@ -460,7 +487,7 @@ void orderHighLow(processP proc){
 
 memP getFrontMem(memP p){
   while(p->prev != NULL){
-    p = p->prev
+    p = p->prev;
   }
   return p;
 }
@@ -511,9 +538,22 @@ void printStatus(long clk, int *tprint, int status, processP p){
 void printMM(memP heap){
   printf("\t\tMemory Map:\t");
   while(heap!=NULL){
-    printf("%d-%d: ",heap->addr,heap->addr+heap->size-1);
-    if(heap->proc==NULL) printf("Hole");
-    else printf("Process %d",heap->proc->pid);
+    if(heap->proc!=NULL){
+      printf("%d-%d: ",heap->addr,heap->addr+heap->size-1);
+      printf("Process %d",heap->proc->pid);
+    }
+    if(heap->policy == VSP){
+      if(heap->proc==NULL) printf("Hole");
+    }
+    else if(heap->policy == PAG){
+      if(heap->proc==NULL){
+        int startMem = heap->addr;
+        while(heap->next != NULL) heap = heap->next;
+        printf("%d-%d: ",startMem,heap->addr+heap->size-1);
+        printf("Free frame(s)");
+      }
+      else printf(", Page %d",heap->proc->blocks->pNum);
+    }
     heap = heap->next;
     printf("\n");
     if(heap!=NULL) printf("\t\t\t\t");
