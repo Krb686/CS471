@@ -22,12 +22,13 @@ memP sweepMem(long clk, int *count, int *tprint, memP heap){
 
 //heap->proc should never be null
 void removeProc(memP *heap){
-  memP t = (*heap);
+  memP t = *heap;
+  memP *tempHeap = heap;
   int policy = t->policy;
   tempHeapP pageIter = t->proc->blocks;
-  free(t->proc);
 
   free(t->proc->space);//fix for SEG
+  free(t->proc);
   if(policy==PAG){
     do{
       t = pageIter->memBlock;
@@ -37,7 +38,10 @@ void removeProc(memP *heap){
   }
   else{
     do{
-      if(policy==SEG) t = pageIter->memBlock;
+      if(policy==SEG){
+        t = pageIter->memBlock;
+        memP *tempHeap = &((*heap)->prev);
+      }
       t->proc = NULL;
       if(t->prev!=NULL && t->prev->proc==NULL){
         t = t->prev;
@@ -45,21 +49,21 @@ void removeProc(memP *heap){
         if(t->next->next!=NULL && t->next->next->proc==NULL){
           t->size += t->next->next->size;
           t->next = t->next->next->next;
-          free((*heap)->next);
+          free((*tempHeap)->next);
         }
         else if(t->next->next==NULL) t->next = NULL;
         else t->next = t->next->next;
-        free(*heap);
+        free(*tempHeap);
+        *tempHeap = t;
       }
       else if(t->next!=NULL && t->next->proc==NULL){
         t = t->next;
-        (*heap)->size += t->size;
-        (*heap)->next = t->next;
+        (*tempHeap)->size += t->size;
+        (*tempHeap)->next = t->next;
         free(t);
-        t = (*heap);
+        t = *tempHeap;
       }
       if(t->next!=NULL) t->next->prev = t;
-      *heap = t;
       if(pageIter!=NULL) pageIter = pageIter->next;
     }while(pageIter!=NULL);
   }
@@ -413,7 +417,10 @@ void printMM(memP heap){
       printf("Process %d",heap->proc->pid);
     }
     if(heap->policy == VSP){
-      if(heap->proc==NULL) printf("Hole");
+      if(heap->proc==NULL){
+        printf("%d-%d: ",heap->addr,heap->addr+heap->size-1);
+        printf("Hole");
+      }
     }
     else if(heap->policy == PAG){
       if(heap->proc==NULL){

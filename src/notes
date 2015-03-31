@@ -1,0 +1,9 @@
+
+
+while(){
+  head = indexHeap->memblock
+  while(indexHeap->memblock == head){
+    subdivide()
+    indexHeap = indexHeap->nexindexHeap
+  }
+}
