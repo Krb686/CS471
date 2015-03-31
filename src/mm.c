@@ -54,20 +54,14 @@ void removeProc(memP *heap){
   }
   else{
     do{
-      printf("\n\nDEBUG1:%d\n\n", t->proc->pid);
       if(policy==SEG){
         t = pageIter->memBlock;
         memP *tempHeap = &((*heap)->prev);
-        printf("\n\nDEBUG2:%d\n\n", t->proc->pid);       
       }
       t->proc = NULL;
-      printf("\n\nDEBUG:%d\n\n", 10);  
       if(t->prev!=NULL && t->prev->proc==NULL){
-        printf("\n\nDEBUG:%d\n\n", 11);  
         t = t->prev;
-        printf("\n\nDEBUG3:%d\n\n", t->proc->pid);
         t->size += t->next->size;
-        
         if(t->next->next!=NULL && t->next->next->proc==NULL){
           t->size += t->next->next->size;
           t->next = t->next->next->next;
@@ -79,16 +73,13 @@ void removeProc(memP *heap){
         *tempHeap = t;
       }
       else if(t->next!=NULL && t->next->proc==NULL){
-        printf("\n\nDEBUG4:%d\n\n", 12);
         t = t->next;
-        printf("\n\nDEBUG4:%d\n\n", t->proc->pid); 
         (*tempHeap)->size += t->size;
         (*tempHeap)->next = t->next;
         free(t);
         t = *tempHeap;
       }
       if(t->next!=NULL) t->next->prev = t;
-      printf("\n\nDEBUG:%d\n\n", 14);
       if(pageIter!=NULL) pageIter = pageIter->next;
     }while(pageIter!=NULL);
   }
@@ -371,8 +362,6 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
 
       //Free the last one
       free(tempSegIndex);
-
-      cleanHeap(heap);
 
       return NULL;
     }
