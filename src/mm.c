@@ -324,12 +324,6 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
     //If all blocks could be allocated
     if(allLocsFound == 1){
 
-      //Loop through and actually allocate (assign proc) to each memBlock
-      while(tempSegIndex != NULL){
-        tempSegIndex->memBlock->proc = proc;
-        tempSegIndex = tempSegIndex->next;
-      }
-
       //Make sure the proc->blocks points to the front of the tempSeg list
       proc->blocks = tempSegHead;
 
