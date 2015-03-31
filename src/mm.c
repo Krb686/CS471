@@ -363,13 +363,15 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
 
         //If the heap block is free, large enough, and the smallest currently seen
         if(localHeap->proc == NULL && heapSize >= requiredSize && heapSize < smallestSize){
-          numSegsFound++;
-          blockFound = 1;
+          
+          //Only want to increment this once if the proc space can be allocated
+          if(blockFound == 0){
+            numSegsFound++;
+            blockFound = 1;
+          }
             
           smallestSize = heapSize;
           smallestBlock = localHeap;
- 
-          
         }
 
         localHeap = localHeap->next;
@@ -377,7 +379,7 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
 
       if(blockFound == 1){
 
-        subdivideHeap(smallestBlock, proc, smallestSize);     
+        subdivideHeap(&smallestBlock, proc, smallestSize);     
  
         if(numSegsFound == 1){
           tempSegIndex->memBlock = smallestBlock;
@@ -416,7 +418,7 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
         return NULL;
       }
       currentSpace = currentSpace->next;
-    } while(currentSpace != NULL && blockFound == 1); 
+    } while(currentSpace != NULL); 
    
     //All blocks could be allocated. Success!
 
