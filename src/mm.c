@@ -425,7 +425,88 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
     
   //Worst fit
   } else if(param == 2){
+    int blockFound;
+    int largestSize;
+    memP largestBlock;
+    //For each space assigned to the process
+    do {
+      blockFound = 0;
 
+      largstSize = 0;
+      largestBlock = NULL;
+
+      //Reset localHeap to the head of the heap
+      localHeap = *heap;
+
+      //Update the required size
+      requiredSize = currentSpace->x;
+
+      //For each heap block
+      while(localHeap != NULL){
+        heapSize = localHeap->size;
+
+        //If the heap block is free, large enough, and the smallest currently seen
+        if(localHeap->proc == NULL && heapSize >= requiredSize && heapSize > largestSize){
+          
+          //Only want to increment this once if the proc space can be allocated
+          if(blockFound == 0){
+            numSegsFound++;
+            blockFound = 1;
+          }
+            
+          largestSize = heapSize;
+          largestBlock = localHeap;
+        }
+
+        localHeap = localHeap->next;
+      }
+
+      if(blockFound == 1){
+
+        subdivideHeap(&largestBlock, proc, largestSize);     
+ 
+        if(numSegsFound == 1){
+          tempSegIndex->memBlock = largestBlock;
+        } else if(numSegsFound > 1){
+          tempHeapP tempSeg = malloc(sizeof(tempHeapR));
+          
+          tempSeg->next = NULL;
+          tempSeg->prev = tempSegIndex;
+          tempSeg->memBlock = largestBlock;
+
+          tempSegIndex->next = tempSeg;
+          tempSegIndex = tempSegIndex->next;
+        }  
+      } else {
+        //This will occur if the process block could not be allocated.
+        //De-allocate temp stuff, the proc cannot be loaded
+
+        tempSegIndex = tempSegHead;
+
+
+        //Loop through tempSeg blocks and free them
+        while(tempSegIndex->next != NULL){
+
+          tempSegIndex->memBlock->proc = NULL;
+
+          tempSegIndex = tempSegIndex->next;
+          free(tempSegIndex->prev);
+        }
+
+        tempSegIndex->memBlock->proc = NULL;       
+        //Free the last one 
+        free(tempSegIndex);
+
+        cleanHeap(heap);
+
+        return NULL;
+      }
+      currentSpace = currentSpace->next;
+    } while(currentSpace != NULL); 
+   
+    //All blocks could be allocated. Success!
+
+ 
   }
 
   //If successfully found enough blocks
