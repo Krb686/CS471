@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+//Not used
 void printP(processP p){
   if(p!=NULL){
     printf("PID:\t%d\naTime:\t%d\n",p->pid,p->aTime);

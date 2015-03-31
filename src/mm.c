@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//Checks if process belonging to the passed in memory block has ended
+//If it has it calls removeProc with that memory block
+//Also updates count when a process is removed and prints staus
+//tprint is used to indicate whether time has been printed yet
 memP sweepMem(long clk, int *count, int *tprint, memP heap){
   if(heap==NULL) return heap;
   if(heap->proc != NULL && heap->proc->deadline == clk){
@@ -20,6 +24,10 @@ memP sweepMem(long clk, int *count, int *tprint, memP heap){
   return heap;
 }
 
+//If PAG it frees the process corresponding to the memblock passed in and sets
+//the proc field of every page corresponding to that process to null
+//If SEG or VSP it does the same thing but it also checks if two or more
+//adjacent blocks are empty, in which case it stitches them into one block
 //heap->proc should never be null
 void removeProc(memP *heap){
   memP t = *heap;
@@ -69,6 +77,7 @@ void removeProc(memP *heap){
   }
 }
 
+//Removes head of unQ linked list and appends to tail of Q linked list
 void popQ2Q(processP *unQ, processP *Q){
   processP t = *unQ;
   processP lQ = lastP(*Q);
@@ -79,7 +88,9 @@ void popQ2Q(processP *unQ, processP *Q){
   if(lQ==NULL) *Q=t;
   else lQ->next = t;
 } 
-  
+
+//removes process from the middle of linked list and updates values of prev and
+//next process pointers
 //p should never be null
 void popN(processP *p){ 
   processP t = *p;
@@ -90,7 +101,8 @@ void popN(processP *p){
   t->prev = NULL; 
 }
 
-//this function will initialize the heap according to size and policy
+//Initializes the heap based on size and policy
+//If paging it mallocs each page and links them all together
 memP initMem(int size, int policy, int param){ 
   if(policy==PAG){
     int i, pagesRequired = (size / param);
@@ -377,6 +389,7 @@ void subdivideHeap(memP *heap, processP proc, int requiredSize){
   }
 }
 
+//Not used
 void printHeap(memP heap){
   printf("[");
   while(heap!=NULL){
@@ -388,6 +401,7 @@ void printHeap(memP heap){
   }
 }
 
+//prints status i.e. arrival, allocation, or completion of process
 void printStatus(long clk, int *tprint, int status, processP p){
   if(!(*tprint)){
     printf("\nt = %ld:\t",clk);
@@ -409,6 +423,7 @@ void printStatus(long clk, int *tprint, int status, processP p){
   }
 }
 
+//prints memory map
 void printMM(memP heap){
   printf("\t\tMemory Map:\t");
   while(heap!=NULL){
@@ -429,7 +444,13 @@ void printMM(memP heap){
         printf("%d-%d: ",startMem,heap->addr+heap->size-1);
         printf("Free frame(s)");
       }
-      else printf(", Page %d",heap->proc->blocks->pNum);
+      else{
+        tempHeapP pageIter = heap->proc->blocks;
+        while(pageIter->next!=NULL&&pageIter->memBlock!=heap){
+          pageIter = pageIter->next;
+        }
+        printf(", Page %d",pageIter->pNum);
+      }
     }
     heap = heap->next;
     printf("\n");
@@ -437,6 +458,7 @@ void printMM(memP heap){
   }
 }
 
+//prints a linked list of processes
 void printQueue(processP Q){
   printf("[");
   while(Q!=NULL){

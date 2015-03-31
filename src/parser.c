@@ -5,7 +5,9 @@
 #include <stdint.h>
 
 /////COMMENTS
-
+//Takes in file and returns an struct with memory size, policy, parameter,
+//count, and PID. Count refers to the number of processes read in, and pid
+//refers to a pointer to the first process
 ParserOutputP parser(char* fName){
 
   ParserOutputP ret = (ParserOutputP)malloc(sizeof(ParserOutputR));
@@ -22,14 +24,17 @@ ParserOutputP parser(char* fName){
   
   line = (char*)malloc(sizeof(char)*100);
   inFileP = fopen(fName, "r");
+//this while loop loops through every character in the given file.
   while(fscanf(inFileP,"%c",line)!=EOF){
-    if(*line=='\r') *line='\n';
-    if(*line=='\n'){
-      line++; *line = '\0'; line--;
-      line -= sizeof(char)*i;
+    if(*line=='\r') *line='\n';//returns are changed to newlines
+    if(*line=='\n'){//if newline process line
+      line++; *line = '\0'; line--;//add end of string to process as string
+      line -= sizeof(char)*i;//points to begining of line
+//checks for key strings that tell what information is found
       if(strstr(line,"Memory Size: ")!=NULL){
         ret->memSize=atoi(line+13);
       }
+//policy converted to a number
       else if(strstr(line,"Memory Management Policy: ")!=NULL){
         if(strstr(line+26,"VSP")!=NULL){
           ret->policy=0;
@@ -45,9 +50,9 @@ ParserOutputP parser(char* fName){
         ret->param=atoi(line+18);
       }
       else if(strstr(line,"Process Id: ")!=NULL){
-        pid0 = insertP(pid0,atoi(line+12));
-        pid9 = lastP(pid0);
-        space0 = NULL;
+        pid0 = insertP(pid0,atoi(line+12));//insert takes care of memory
+        pid9 = lastP(pid0);//points to last node in linked list of processes
+        space0 = NULL;//pointer to mem space
         ret->count++;
         ret->PID0 = pid0;
       }
@@ -58,9 +63,11 @@ ParserOutputP parser(char* fName){
         pid9->deadline=atoi(line+20);
       }
       else if(strstr(line,"Address Space: ")!=NULL){
-        if(ret->policy==2){
+        if(ret->policy==2){//multiple mem spaces
           tmp2 = line+15;
           tmp1 = strchr(line+15,' ');
+//this loop reads in mem spaces dilimited by a space and stores them in the
+//space struct field of the pointer struct
           while(tmp1!=NULL){
             *tmp1 = '\0'; tmp1++;
             space0 = insertSpace(space0,atoi(tmp2));
@@ -71,19 +78,19 @@ ParserOutputP parser(char* fName){
           *tmp1='\0';
           space0 = insertSpace(space0,atoi(tmp2));
         }
-        else{
+        else{//single mem space
           space0 = insertSpace(space0,atoi(line+15));
         }
         pid9->space = space0;
       }
       i = 0;
     }
-    else{
+    else{//not end of line
       line += sizeof(char);
       i++;
     }
   }
-  if(i!=0){
+  if(i!=0){//if line doesn't end with a newline must clean up last line
     if(ret->policy==2){
       tmp2 = line+15;
       tmp1 = strchr(line+15,' ');
@@ -107,6 +114,9 @@ ParserOutputP parser(char* fName){
   return ret;
 }
 
+//This function mallocs space for a pointer and initializes it's values
+//If a non-NULL proccess pointer is specified it links it to the end of the
+//list. Always returns head of the list.
 processP insertP(processP p, int pid){
   processP t=(processP)malloc(sizeof(processR));
   processP end = lastP(p);
@@ -121,6 +131,7 @@ processP insertP(processP p, int pid){
   return t;
 }
 
+//Same function as insertP but for the space struct
 spaceP insertSpace(spaceP p, int x){
   if(x==0) return p;
   spaceP t=(spaceP)malloc(sizeof(spaceR));
@@ -135,11 +146,13 @@ spaceP insertSpace(spaceP p, int x){
   return t;
 }
 
+//returns the tail of a process linked list
 processP lastP(processP p){
   if(p==NULL||p->next==NULL) return p;
   lastP(p->next);
 }
 
+//returns the tail fo a space linked list
 spaceP lastSpace(spaceP p){
   if(p==NULL||p->next==NULL) return p;
   lastSpace(p->next);
