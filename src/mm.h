@@ -19,4 +19,4 @@ void printMM(memP);
 void printQueue(processP);
 spaceP getFrontSpace(spaceP);
 memP getFrontMem(memP);
-void cleanHeap(memP);
+void cleanHeap(memP*);

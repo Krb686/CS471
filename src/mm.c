@@ -413,7 +413,7 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
         //Free the last one 
         free(tempSegIndex);
 
-        cleanHeap(*heap);
+        cleanHeap(heap);
 
         return NULL;
       }
@@ -440,24 +440,24 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
 void cleanHeap(memP *heap){
 
   memP *temp;
-  while(heap->next !=  NULL){
+  while((*heap)->next !=  NULL){
 
-    if(heap->proc == NULL && heap->next->proc == NULL){
+    if((*heap)->proc == NULL && (*heap)->next->proc == NULL){
 
-      temp = heap->next;        
+      *temp = (*heap)->next;        
 
-      heap->size = heap->size + heap->next->size;
-      heap->next = heap->next->next;
-      heap->next->prev = heap;
+      (*heap)->size = (*heap)->size + (*heap)->next->size;
+      (*heap)->next = (*heap)->next->next;
+      (*heap)->next->prev = (*heap);
 
       free(temp);
       temp = NULL;
     } else {
-      heap = heap->next;
+      (*heap) = (*heap)->next;
     }
   }
 
-  heap = getFrontMem(heap);
+  (*heap) = getFrontMem(*heap);
 
 }
 
