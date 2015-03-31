@@ -302,9 +302,11 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
 
         if(numSegsFound == 1){
           tempSegIndex->memBlock = localHeap;
+          tempSegIndex->pNum = numSegsFound;
         } else if(numSegsFound > 1){
           tempHeapP tempSeg = malloc(sizeof(tempHeapR));
           tempSeg->memBlock = localHeap;
+          tempSeg->pNum = numSegsFound;
           tempSeg->next = NULL;
           tempSeg->prev = tempSegIndex;
           tempSegIndex->next = tempSeg;
@@ -547,9 +549,8 @@ void cleanHeap(memP *heap){
 
       free(temp);
       temp = NULL;
-    } else {
-      (*heap) = (*heap)->next;
     }
+    (*heap) = (*heap)->next;
   }
 
   (*heap) = getFrontMem(*heap);
@@ -620,13 +621,20 @@ void printMM(memP heap){
       printf("%d-%d: ",heap->addr,heap->addr+heap->size-1);
       printf("Process %d",heap->proc->pid);
     }
-    if(heap->policy == VSP){
+    if(heap->policy != PAG){
       if(heap->proc==NULL){
         printf("%d-%d: ",heap->addr,heap->addr+heap->size-1);
         printf("Hole");
       }
+      else if(heap->policy == SEG){
+        tempHeapP pageIter = heap->proc->blocks;
+        while(pageIter->next!=NULL&&pageIter->memBlock!=heap){
+          pageIter = pageIter->next;
+        }
+        printf(", Segment %d",pageIter->pNum);
+      }
     }
-    else if(heap->policy == PAG){
+    else{
       if(heap->proc==NULL){
         int startMem = heap->addr;
         while(heap->next!=NULL&&heap->next->proc==NULL) heap = heap->next;
