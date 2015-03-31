@@ -432,7 +432,7 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
     do {
       blockFound = 0;
 
-      largstSize = 0;
+      largestSize = 0;
       largestBlock = NULL;
 
       //Reset localHeap to the head of the heap
