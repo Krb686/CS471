@@ -301,7 +301,7 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
 
         subdivideHeap(&localHeap, proc, requiredSize);
         //suppressing error. I'm guessing you don't need getFrontMem anymore
-        //localHeap = getFrontMem(localHeap);
+        localHeap = getFrontMem(localHeap);
 
         currentSpace = currentSpace->next;
 
@@ -341,6 +341,86 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
   //Best fit
   } else if(param == 1){
 
+    int blockFound;
+    int smallestSize;
+    memP smallestBlock;
+    //For each space assigned to the process
+    do {
+      blockFound = 0;
+
+      smallestSize = memSize + 1;
+      smallestBlock = NULL;
+
+      //Reset localHeap to the head of the heap
+      localHeap = *heap;
+
+      //Update the required size
+      requiredSize = currentSpace->x;
+
+      //For each heap block
+      while(localHeap != NULL){
+        heapSize = localHeap->size;
+
+        //If the heap block is free, large enough, and the smallest currently seen
+        if(localHeap->proc == NULL && heapSize >= requiredSize && heapSize < smallestSize){
+          numSegsFound++;
+          blockFound = 1;
+            
+          smallestSize = heapSize;
+          smallestBlock = localHeap;
+ 
+          
+        }
+
+        localHeap = localHeap->next;
+      }
+
+      if(blockFound == 1){
+
+        subdivideHeap(smallestBlock, proc, smallestSize);     
+ 
+        if(numSegsFound == 1){
+          tempSegIndex->memBlock = smallestBlock;
+        } else if(numSegsFound > 1){
+          tempHeapP tempSeg = malloc(sizeof(tempHeapR));
+          
+          tempSeg->next = NULL;
+          tempSeg->prev = tempSegIndex;
+          tempSeg->memBlock = smallestBlock;
+
+          tempSegIndex->next = tempSeg;
+          tempSegIndex = tempSegIndex->next;
+        }  
+      } else {
+        //This will occur if the process block could not be allocated.
+        //De-allocate temp stuff, the proc cannot be loaded
+
+        tempSegIndex = tempSegHead;
+
+
+        //Loop through tempSeg blocks and free them
+        while(tempSegIndex->next != NULL){
+
+          tempSegIndex->memBlock->proc = NULL;
+
+          tempSegIndex = tempSegIndex->next;
+          free(tempSegIndex->prev);
+        }
+
+        tempSegIndex->memBlock->proc = NULL;       
+        //Free the last one 
+        free(tempSegIndex);
+
+        cleanHeap(*heap);
+
+        return NULL;
+      }
+      currentSpace = currentSpace->next;
+    } while(currentSpace != NULL && blockFound == 1); 
+   
+    //All blocks could be allocated. Success!
+
+    
   //Worst fit
   } else if(param == 2){
 
@@ -352,6 +432,30 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
   } else {
 
   }
+
+}
+
+void cleanHeap(memP *heap){
+
+  memP *temp;
+  while(heap->next !=  NULL){
+
+    if(heap->proc == NULL && heap->next->proc == NULL){
+
+      temp = heap->next;        
+
+      heap->size = heap->size + heap->next->size;
+      heap->next = heap->next->next;
+      heap->next->prev = heap;
+
+      free(temp);
+      temp = NULL;
+    } else {
+      heap = heap->next;
+    }
+  }
+
+  heap = getFrontMem(heap);
 
 }
 
@@ -447,4 +551,19 @@ void printQueue(processP Q){
     Q = Q->next;
   }
   printf("]\n");
+}
+
+memP getFrontMem(memP p){
+  while(p->prev != NULL){
+    p = p->prev;
+  }
+  return p;
+}
+
+
+spaceP getFrontSpace(spaceP p){
+  while(p->prev != NULL){
+    p = p->prev;
+  }
+  return p;
 }

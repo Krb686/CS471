@@ -110,17 +110,4 @@ void orderHighLow(processP proc){
   proc->space = head;
 }
 
-memP getFrontMem(memP p){
-  while(p->prev != NULL){
-    p = p->prev;
-  }
-  return p;
-}
 
-
-spaceP getFrontSpace(spaceP p){
-  while(p->prev != NULL){
-    p = p->prev;
-  }
-  return p;
-}
