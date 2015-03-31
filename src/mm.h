@@ -17,3 +17,6 @@ void printHeap(memP);
 void printStatus(long,int*,int,processP);
 void printMM(memP);
 void printQueue(processP);
+spaceP getFrontSpace(spaceP);
+memP getFrontMem(memP);
+void cleanHeap(memP*);

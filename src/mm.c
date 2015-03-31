@@ -312,8 +312,9 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
         }
 
         subdivideHeap(&localHeap, proc, requiredSize);
-        //suppressing error. I'm guessing you don't need getFrontMem anymore
-        //localHeap = getFrontMem(localHeap);
+       
+        //Reset localHeap to the front of the heap 
+        localHeap = getFrontMem(localHeap);
 
         currentSpace = currentSpace->next;
 
@@ -329,22 +330,27 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
       }
     }
 
+    //Reset the tempSegIndex to the front of the temp list
     tempSegIndex = tempSegHead;
-    if(allLocsFound == 1){
-      while(tempSegIndex != NULL){
-        tempSegIndex->memBlock->proc = proc;
-        tempSegIndex = tempSegIndex->next;
-      }
 
+    //If all blocks could be allocated
+    if(allLocsFound == 1){
+
+      //Make sure the proc->blocks points to the front of the tempSeg list
       proc->blocks = tempSegHead;
 
       return tempSegHead;
+
+    //If all the blocks could not be allocated
     } else {
+
+      //Loop through and free each tempSeg item
       while(tempSegIndex->next != NULL){
         tempSegIndex = tempSegIndex->next;
         free(tempSegIndex->prev);
       }
 
+      //Free the last one
       free(tempSegIndex);
 
       return NULL;
@@ -353,17 +359,200 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
   //Best fit
   } else if(param == 1){
 
+    int blockFound;
+    int smallestSize;
+    memP smallestBlock;
+    
+    //For each space assigned to the process
+    do {
+      blockFound = 0;
+
+      //Setup variables to keep track of smallest metric
+      smallestSize = memSize + 1;
+      smallestBlock = NULL;
+
+      //Reset localHeap to the head of the heap
+      localHeap = *heap;
+
+      //Update the required size
+      requiredSize = currentSpace->x;
+
+      //For each heap block
+      while(localHeap != NULL){
+        heapSize = localHeap->size;
+
+        //If the heap block is free, large enough, and the smallest currently seen
+        if(localHeap->proc == NULL && heapSize >= requiredSize && heapSize < smallestSize){
+          
+          //Only want to increment this once if the proc space can be allocated
+          //Then turn on the flag to signal that an adequate heap block was found for the current space block
+          if(blockFound == 0){
+            numSegsFound++;
+            blockFound = 1;
+          }
+          
+          //Update the tracking variables 
+          smallestSize = heapSize;
+          smallestBlock = localHeap;
+        }
+
+        localHeap = localHeap->next;
+      }
+
+      //If an adequate heap block was found
+      if(blockFound == 1){
+
+        //Allocate and subdivide that heap block
+        subdivideHeap(&smallestBlock, proc, smallestSize);     
+
+        //For the first space block, just assign the heapBlock to tempSegIndex 
+        if(numSegsFound == 1){
+          tempSegIndex->memBlock = smallestBlock;
+        } else if(numSegsFound > 1){
+          tempHeapP tempSeg = malloc(sizeof(tempHeapR));
+          
+          tempSeg->next = NULL;
+          tempSeg->prev = tempSegIndex;
+          tempSeg->memBlock = smallestBlock;
+
+          tempSegIndex->next = tempSeg;
+          tempSegIndex = tempSegIndex->next;
+        }  
+      } else {
+        //This will occur if the process block could not be allocated.
+        //De-allocate temp stuff, the proc cannot be loaded
+        tempSegIndex = tempSegHead;
+
+
+        //Loop through tempSeg blocks and free them
+        while(tempSegIndex->next != NULL){
+          tempSegIndex->memBlock->proc = NULL;
+          tempSegIndex = tempSegIndex->next;
+          free(tempSegIndex->prev);
+        }
+
+        tempSegIndex->memBlock->proc = NULL;       
+        //Free the last one 
+        free(tempSegIndex);
+
+        cleanHeap(heap);
+
+        return NULL;
+      }
+      currentSpace = currentSpace->next;
+    } while(currentSpace != NULL); 
+   
+    //All blocks could be allocated. Success!
+
+    
   //Worst fit
   } else if(param == 2){
+    int blockFound;
+    int largestSize;
+    memP largestBlock;
+    //For each space assigned to the process
+    do {
+      blockFound = 0;
 
+      largestSize = 0;
+      largestBlock = NULL;
+
+      //Reset localHeap to the head of the heap
+      localHeap = *heap;
+
+      //Update the required size
+      requiredSize = currentSpace->x;
+
+      //For each heap block
+      while(localHeap != NULL){
+        heapSize = localHeap->size;
+
+        //If the heap block is free, large enough, and the smallest currently seen
+        if(localHeap->proc == NULL && heapSize >= requiredSize && heapSize > largestSize){
+          
+          //Only want to increment this once if the proc space can be allocated
+          if(blockFound == 0){
+            numSegsFound++;
+            blockFound = 1;
+          }
+            
+          largestSize = heapSize;
+          largestBlock = localHeap;
+        }
+
+        localHeap = localHeap->next;
+      }
+
+      if(blockFound == 1){
+
+        subdivideHeap(&largestBlock, proc, largestSize);     
+ 
+        if(numSegsFound == 1){
+          tempSegIndex->memBlock = largestBlock;
+        } else if(numSegsFound > 1){
+          tempHeapP tempSeg = malloc(sizeof(tempHeapR));
+          
+          tempSeg->next = NULL;
+          tempSeg->prev = tempSegIndex;
+          tempSeg->memBlock = largestBlock;
+
+          tempSegIndex->next = tempSeg;
+          tempSegIndex = tempSegIndex->next;
+        }  
+      } else {
+        //This will occur if the process block could not be allocated.
+        //De-allocate temp stuff, the proc cannot be loaded
+
+        tempSegIndex = tempSegHead;
+
+
+        //Loop through tempSeg blocks and free them
+        while(tempSegIndex->next != NULL){
+
+          tempSegIndex->memBlock->proc = NULL;
+
+          tempSegIndex = tempSegIndex->next;
+          free(tempSegIndex->prev);
+        }
+
+        tempSegIndex->memBlock->proc = NULL;       
+        //Free the last one 
+        free(tempSegIndex);
+
+        cleanHeap(heap);
+
+        return NULL;
+      }
+      currentSpace = currentSpace->next;
+    } while(currentSpace != NULL); 
+   
+    //All blocks could be allocated. Success!
+
+ 
+  }
+}
+
+void cleanHeap(memP *heap){
+
+  memP *temp;
+  while((*heap)->next !=  NULL){
+
+    if((*heap)->proc == NULL && (*heap)->next->proc == NULL){
+
+      *temp = (*heap)->next;        
+
+      (*heap)->size = (*heap)->size + (*heap)->next->size;
+      (*heap)->next = (*heap)->next->next;
+      (*heap)->next->prev = (*heap);
+
+      free(temp);
+      temp = NULL;
+    } else {
+      (*heap) = (*heap)->next;
+    }
   }
 
-  //If successfully found enough blocks
-  if(currentSpace == NULL){
-
-  } else {
-
-  }
+  (*heap) = getFrontMem(*heap);
 
 }
 
@@ -469,4 +658,19 @@ void printQueue(processP Q){
     Q = Q->next;
   }
   printf("]\n");
+}
+
+memP getFrontMem(memP p){
+  while(p->prev != NULL){
+    p = p->prev;
+  }
+  return p;
+}
+
+
+spaceP getFrontSpace(spaceP p){
+  while(p->prev != NULL){
+    p = p->prev;
+  }
+  return p;
 }

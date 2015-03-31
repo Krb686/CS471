@@ -7,5 +7,4 @@
 
 int main(int, char*[]);
 void orderHighLow(processP);
-spaceP getFrontSpace(spaceP);
-memP getFrontMem(memP);
+
