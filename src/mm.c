@@ -34,8 +34,16 @@ void removeProc(memP *heap){
   memP *tempHeap = heap;
   int policy = t->policy;
   tempHeapP pageIter = t->proc->blocks;
+  spaceP space = t->proc->space;
 
-  free(t->proc->space);//fix for SEG
+  if(policy == SEG){
+    while(space->next!=NULL){
+      spaceP temp = space;
+      space = space->next;
+      free(temp);
+    }
+  }
+  free(space);
   free(t->proc);
   if(policy==PAG){
     do{
@@ -340,7 +348,7 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
 
       //Make sure the proc->blocks points to the front of the tempSeg list
       proc->blocks = tempSegHead;
-
+      if(tempSegHead == NULL) printf("\n\nERR2\n\n");
       return tempSegHead;
 
     //If all the blocks could not be allocated
@@ -550,7 +558,9 @@ void cleanHeap(memP *heap){
       free(temp);
       temp = NULL;
     }
-    (*heap) = (*heap)->next;
+    else{
+      (*heap) = (*heap)->next;
+    }
   }
 
   (*heap) = getFrontMem(*heap);
@@ -628,6 +638,7 @@ void printMM(memP heap){
       }
       else if(heap->policy == SEG){
         tempHeapP pageIter = heap->proc->blocks;
+        if(pageIter==NULL) printf("\n\nERR1\n\n");
         while(pageIter->next!=NULL&&pageIter->memBlock!=heap){
           pageIter = pageIter->next;
         }
