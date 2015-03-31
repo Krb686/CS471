@@ -55,11 +55,9 @@ void removeProc(memP *heap){
   else{
     do{
       printf("\n\nDEBUG:%d\n\n", 16); 
-      printf("\n\nDEBUG1:%d\n\n", t->proc->pid);
       if(policy==SEG){
         t = pageIter->memBlock;
         memP *tempHeap = &((*heap)->prev);
-        printf("\n\nDEBUG2:%d\n\n", t->proc->pid);       
       }
       t->proc = NULL;
       printf("\n\nDEBUG:%d\n\n", 10);  
@@ -88,9 +86,15 @@ void removeProc(memP *heap){
         free(t);
         t = *tempHeap;
       }
-      if(t->next!=NULL) t->next->prev = t;
+      if(t->next!=NULL){ 
+        t->next->prev = t;
+        printf("\n\nDEBUG:%d\n\n", 17);  
+      }
       printf("\n\nDEBUG:%d\n\n", 14);
-      if(pageIter!=NULL) pageIter = pageIter->next;
+      if(pageIter!=NULL){ 
+        pageIter = pageIter->next;
+        printf("\n\nDEBUG:%d\n\n", 18);
+      }
       printf("\n\nDEBUG:%d\n\n", 15);
     }while(pageIter!=NULL);
   }
