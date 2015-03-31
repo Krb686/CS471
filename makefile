@@ -7,4 +7,4 @@ run:		./bin/main.o ./bin/parser.o ./bin/process.o ./bin/mm.o
 ./bin/process.o:./src/process.c ./src/process.h
 		gcc -c -o ./bin/process.o ./src/process.c
 ./bin/mm.o:	./src/mm.c ./src/mm.h ./src/parser.h
-		gcc -c -o ./bin/mm.o ./src/mm.c
+		gcc -g -c -o ./bin/mm.o ./src/mm.c
