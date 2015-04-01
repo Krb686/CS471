@@ -35,6 +35,7 @@ void removeProc(memP *heap){
   int policy = t->policy;
   tempHeapP pageIter = t->proc->blocks;
   spaceP space = t->proc->space;
+  processP proc = t->proc;
 
   if(policy == SEG){
     while(space->next!=NULL){
@@ -55,10 +56,10 @@ void removeProc(memP *heap){
     do{
       if(policy==SEG){
         t = pageIter->memBlock;
-        memP *tempHeap = &((*heap)->prev);
+        memP *tempHeap = &(pageIter->memBlock);
       }
       t->proc = NULL;
-      if(t->prev!=NULL && t->prev->proc==NULL){
+      if(t->prev!=NULL && t->prev->proc==NULL){//combining free blocks
         t = t->prev;
         t->size += t->next->size;
         if(t->next->next!=NULL && t->next->next->proc==NULL){
@@ -82,7 +83,7 @@ void removeProc(memP *heap){
       if(pageIter!=NULL) pageIter = pageIter->next;
     }while(pageIter!=NULL);
   }
-  free(t->proc);
+  free(proc);
 }
 
 //Removes head of unQ linked list and appends to tail of Q linked list
@@ -591,9 +592,11 @@ void subdivideHeap(memP *heap, processP proc, int requiredSize){
 
 //Not used
 void printHeap(memP heap){
+  while(heap!=NULL&&heap->prev!=NULL) heap = heap->prev;
   printf("[");
   while(heap!=NULL){
     if(heap->proc!=NULL) printf("X");
+    if(heap->proc!=NULL&&heap->proc->blocks!=NULL) printf("B");
     printf("%d",heap->size);
     heap = heap->next;
     if(heap!=NULL) printf("|");
