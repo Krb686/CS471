@@ -44,7 +44,6 @@ void removeProc(memP *heap){
     }
   }
   free(space);
-  free(t->proc);
   if(policy==PAG){
     do{
       t = pageIter->memBlock;
@@ -83,6 +82,7 @@ void removeProc(memP *heap){
       if(pageIter!=NULL) pageIter = pageIter->next;
     }while(pageIter!=NULL);
   }
+  free(t->proc);
 }
 
 //Removes head of unQ linked list and appends to tail of Q linked list
