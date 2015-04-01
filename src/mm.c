@@ -56,7 +56,7 @@ void removeProc(memP *heap){
     do{
       if(policy==SEG){
         t = pageIter->memBlock;
-        memP *tempHeap = &(pageIter->memBlock);
+        tempHeap = &(pageIter->memBlock);
       }
       t->proc = NULL;
       if(t->prev!=NULL && t->prev->proc==NULL){//combining free blocks

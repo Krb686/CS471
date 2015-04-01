@@ -1,5 +1,5 @@
 #!/bin/sh
-echo -n "msg"
+echo -n
 read input
 
 git add -A
