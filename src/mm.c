@@ -8,19 +8,28 @@
 //tprint is used to indicate whether time has been printed yet
 memP sweepMem(long clk, int *count, int *tprint, memP heap){
   if(heap==NULL) return heap;
+  processP proc = heap->proc;
+  int updateNext = 1;
   if(heap->proc != NULL && heap->proc->deadline == clk){
+    if(heap->prev==NULL) updateNext = 0;
+
     printStatus(clk, tprint, DONE, heap->proc);
     (*count)--;
+
     removeProc(&heap);
+    free(proc->blocks);
+    free(proc);
+
     memP t = heap;
     while(t->prev!=NULL) t = t->prev;
     printMM(t);
+
     t = sweepMem(clk, count, tprint, heap->next);
-    if(t!=heap) heap->next = t;
+    if(updateNext) heap->next = t;
     return heap;
   }
   memP t = sweepMem(clk, count, tprint, heap->next);
-  if(t!=heap) heap->next = t;
+  //if(updateNext) heap->next = t;
   return heap;
 }
 
@@ -35,7 +44,6 @@ void removeProc(memP *heap){
   int policy = t->policy;
   tempHeapP pageIter = t->proc->blocks;
   spaceP space = t->proc->space;
-  processP proc = t->proc;
 
   if(policy == SEG){
     while(space->next!=NULL){
@@ -83,7 +91,6 @@ void removeProc(memP *heap){
       if(pageIter!=NULL) pageIter = pageIter->next;
     }while(pageIter!=NULL);
   }
-  free(proc);
 }
 
 //Removes head of unQ linked list and appends to tail of Q linked list

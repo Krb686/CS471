@@ -1,0 +1,25 @@
+t = 2000:	Process 2 completes
+		Memory Map:	0-199: Process 6, Segment 1
+				200-249: Process 6, Segment 2
+				250-349: Process 8, Segment 1
+				350-999: Hole
+				1000-1299: Process 7, Segment 1
+				1300-1399: Process 4, Segment 1
+				1400-1499: Process 4, Segment 2
+				1500-1999: Process 7, Segment 2
+		Process 7 completes
+		Memory Map:	0-199: Process 6, Segment 1
+				200-249: Process 6, Segment 2
+				250-349: Process 8, Segment 1
+				350-1299: Hole
+				1300-1399: Process 4, Segment 1
+				1400-1499: Process 4, Segment 2
+				1500-1999: Hole
+		Process 4 completes
+		Memory Map:	0-199: Process 6, Segment 1
+				200-249: Process 6, Segment 2
+				250-349: Process 8, Segment 1
+				350-1999: Hole
+
+t = 2100:	Process 8 completes
+
