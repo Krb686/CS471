@@ -356,7 +356,6 @@ tempHeapP allocMemSEG(memP *heap, processP proc, int memSize){
 
       //Make sure the proc->blocks points to the front of the tempSeg list
       proc->blocks = tempSegHead;
-      if(tempSegHead == NULL) printf("\n\nERR2\n\n");
       return tempSegHead;
 
     //If all the blocks could not be allocated

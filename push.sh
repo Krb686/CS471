@@ -4,4 +4,4 @@ read input
 
 git add -A
 git commit -am "$input"
-git push origin p2
+git push origin p3
