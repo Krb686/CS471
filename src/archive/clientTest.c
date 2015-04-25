@@ -12,7 +12,7 @@
 #define SUBTRACT 2
 #define EXIT 3
 
-int server_port_no = 6088;
+int server_port_no = 6088, a;
 char ip_addr[20] = "127.0.0.1";
 struct parameters {
    int operand1;
@@ -57,10 +57,17 @@ main() {
    recv(sockfd, (char *)&result, sizeof(result), 0);
    printf("Received result of subtracting %d from %d = %d from TCP Server\n", data.operand2, data.operand1, result);
   
+ while(1){
    sleep(1);
-   data.operation = EXIT;
-   send(sockfd, (char*)&data, sizeof(data), 0);
-   printf("Sent request to EXIT to TCP Server\n");
-   close(sockfd);
-   printf("exit\n");
+   printf("Exit?\n");
+   scanf("%d",&a);
+   if(a == 3){
+     data.operation = EXIT;
+     send(sockfd, (char*)&data, sizeof(data), 0);
+     printf("Sent request to EXIT to TCP Server\n");
+     close(sockfd);
+     printf("exit\n");
+     exit(0);
+   }
+ }
 }
