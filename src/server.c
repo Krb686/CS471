@@ -17,9 +17,9 @@ int backlog = 10;
 static int *seller_on;
 
 void main() {
-  int sockfd, newsockfd, clilen;
-  int pid, timeout;
-  struct sockaddr_in my_addr, comm_addr;
+  int selsockfd, buysockfd, newsockfd, clilen;
+  int pid, ret;
+  struct sockaddr_in sel_addr, buy_addr, comm_addr;
   struct timeval t;
   t.tv_usec = 10000;
   char data[99];
@@ -28,24 +28,35 @@ void main() {
               MAP_SHARED | MAP_ANONYMOUS, -1, 0);
   *TEST = 0;
 
-  sockfd = socket(AF_INET, SOCK_STREAM, 0);
-  bzero((char *)&my_addr, sizeof(my_addr));
-  my_addr.sin_family = AF_INET;
-  my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  my_addr.sin_port = htons(SELLER_PORT);
+  selsockfd = socket(AF_INET, SOCK_STREAM, 0);
+  buysockfd = socket(AF_INET, SOCK_STREAM, 0);
+  bzero((char *)&sel_addr, sizeof(sel_addr));
+  bzero((char *)&buy_addr, sizeof(buy_addr));
+  sel_addr.sin_family = AF_INET;
+  sel_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  sel_addr.sin_port = htons(SELLER_PORT);
+  buy_addr.sin_family = AF_INET;
+  buy_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  buy_addr.sin_port = htons(BUYER_PORT);
 
-  bind(sockfd, (struct sockaddr *)&my_addr, sizeof(my_addr));
+  bind(selsockfd, (struct sockaddr *)&sel_addr, sizeof(sel_addr));
+  bind(buysockfd, (struct sockaddr *)&buy_addr, sizeof(buy_addr));
   printf("TCP Server Initialized...\n");
-  listen(sockfd, backlog);
+  listen(selsockfd, 1);
+  listen(buysockfd, backlog);
   clilen = sizeof(comm_addr);
   printf("Waiting for client connections...\n");
 
-  int flags;
+//  int flags;
 //  if(-1 == (flags = fcntl(sockfd, F_GETFL, 0))) flags = 0;
 //  fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
-
+  if((pid = fork()) == 0){
+    newsockfd = accept(selsockfd, (struct sockaddr *)&comm_addr,
+                (socklen_t *)&clilen);
+    
+  }
   while(1){
-    newsockfd = accept(sockfd, (struct sockaddr *)&comm_addr,
+    newsockfd = accept(buysockfd, (struct sockaddr *)&comm_addr,
                 (socklen_t *)&clilen);
     if((pid = fork()) != 0){
       close(newsockfd);

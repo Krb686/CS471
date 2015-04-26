@@ -43,24 +43,20 @@ void main(){
   while(login){
     printf("Please enter 'login <username>'\n>>");
     scanf("%s",data);
-    pch = strtok(data," ");
-    if(strcasecmp(pch,"login")){
-      pch = strtok(NULL, " ");
-      if(strcasecmp(pch,"seller")==0){
-        send(sockfd, "login seller", sizeof(data), 0);
-        ret = (int)recv(sockfd, data, sizeof(data), 0);
-        if(ret>0){
-          printf("%s\n",data);
-          login = 0;
-        }
-        else printf("DEBUG1");
+    char *p = data;
+    for(;*p;++p) *p = tolower(*p);
+    if(strncmp(pch,"login ",6)){
+      send(sockfd, data, sizeof(data), 0);
+      ret = (int)recv(sockfd, data, sizeof(data), 0);
+      if(ret>0){
+        printf("%s\n",data);
+        login = 0;
       }
-      else printf("ERR!\nInvalid username!\n");
+      else printf("DEBUG1");
     }
-    else printf("ERR!\nPlease use login command!\n");
+    else printf("ERR!\nInvalid command!\n");
   }
   if((pid = fork()) != 0){
-    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO,&t,sizeof(struct timeval));
     while(1){
       ret = (int)recv(sockfd, data, sizeof(data), 0);
       if(ret>0){
