@@ -32,12 +32,9 @@ void main(){
   comm_addr.sin_addr.s_addr = inet_addr(AUCTIONSERVER_IP_ADDRESS);
   comm_addr.sin_port = htons(BUYER_PORT);
 
-  ret = (int)connect(sockfd, (struct sockaddr *)&comm_addr, sizeof(comm_addr));
+  
 
-  if(ret < 0){
-    printf("%d_err:%s\n", ret, strerror(errno));
-    exit(0);
-  }
+  
   printf("Buyer initialized\n\n");
 
   while(login){
@@ -45,10 +42,14 @@ void main(){
     scanf("%s", data);
     pch = strtok(data, " ");
     if(strcasecmp(pch, "login")){
-      pch = strtok(NULL, " ");
-      if(strcasecmp(pch, "seller") == 0){
-        
+
+      ret = (int)connect(sockfd, (struct sockaddr *)&comm_addr, sizeof(comm_addr));
+
+      if(ret < 0){
+        printf("%d_err:%s\n", ret, strerror(errno));
+        exit(0);
       }
+
     }
   }
 }

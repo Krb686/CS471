@@ -10,6 +10,7 @@
 #include<sys/mman.h>
 #include<netinet/in.h>
 #include<time.h>
+#include "server.h"
 
 int SELLER_PORT = 5372;
 int BUYER_PORT  = 5373;
@@ -102,7 +103,7 @@ void main() {
     }
     else{
 //      setsockopt(newsockfd, SOL_SOCKET, SO_RCVTIMEO,&t,
-                 sizeof(struct timeval));
+//                 sizeof(struct timeval));
       printf("TCP Client Connected...\n");
       (*TEST)++;
       printf("[%d]\n",*TEST);
@@ -122,4 +123,24 @@ void main() {
       }
     }
   }
+}
+
+int clientLogin(){
+  return 0;
+}
+
+void listItems(){
+
+}
+
+void addItem(int item_number, char *pch){
+
+}
+
+void sellItem(int item_number){
+
+}
+
+void invalidCommand(){
+
 }
