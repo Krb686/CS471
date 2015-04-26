@@ -72,4 +72,32 @@ void main(){
       }
     }
   }
+
+  if((pid = fork()) != 0){
+    while(1){
+      ret = (int)recv(sockfd, data, sizeof(data), 0);
+      if(ret > 0){
+        printf("<%s>\n", data);
+      }
+    }
+  } else {
+    printf("\t\t~~~~MENU~~~~\n1)  List\n2) Bid <Item Number> <Bid Amount>\n3) Logout\n~~~~~~~~~~~~~~~~\n");
+    while(!logout){
+      printf(">>");
+      scanf("%s", data);
+      p = data;
+      for(;*p;++p) *p = tolower(*p);
+      pch = strtok(data, " ");
+      if(strcmp(pch, "list") == 0){
+        
+      } else if(strcmp(pch, "bid") == 0){
+
+      } else if(strcmp(pch, "logout") == 0){
+
+      } else {
+
+      }
+    }
+
+  }
 }
