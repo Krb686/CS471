@@ -77,6 +77,7 @@ void main(){
     }
   }
 
+  //Loop and print output responses from the server
   if((pid = fork()) != 0){
     while(1){
       ret = (int)recv(sockfd, data, sizeof(data), 0);

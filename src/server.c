@@ -12,6 +12,7 @@
 #include<netinet/in.h>
 #include<time.h>
 #include"server.h"
+#include<fcntl.h>
 
 int SELLER_PORT = 5372;
 int BUYER_PORT  = 5373;
@@ -171,7 +172,7 @@ int clientLogin(char *name){
   return LOGINFAILED;
 }
 
-void listItems(int sockfd){
+int listItems(int sockfd){
   itemListP iter = updateItemList();
   if(iter!=NULL) printf("\t\t~~~~ITEMS~~~~\n");
   while(iter!=NULL){
@@ -180,10 +181,11 @@ void listItems(int sockfd){
     iter = iter->next;
   }
   printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+  return 0;
 }
 
 int addItem(int item_number, char *pch){
-  updateItemList()
+  updateItemList();
   return 0;
 }
 

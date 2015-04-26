@@ -18,7 +18,7 @@ typedef struct items{
 typedef struct itemList{
   struct itemList *next, *prev;
   itemP data;
-}llR, *llP;
+}itemListR, *itemListP;
 
 int clientLogin();
 int listItems();
