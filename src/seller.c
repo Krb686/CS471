@@ -8,6 +8,7 @@
 #include<sys/mman.h>
 #include<netinet/in.h>
 #include<time.h>
+#include "seller.h"
 
 int SELLER_PORT = 5372;
 char AUCTIONSERVER_IP_ADDRESS[20] = "127.0.0.1";
@@ -92,3 +93,24 @@ void main(){
     }
   }
 }
+
+
+void listItems(){
+
+
+}
+
+
+void addItem(){
+
+
+}
+
+
+void sellItem(){
+
+
+}
+
+
+

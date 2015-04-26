@@ -24,6 +24,8 @@ void main() {
   t.tv_usec = 10000;
   char data[99];
   int *TEST;
+  int timeout;
+
   TEST = mmap(NULL, sizeof *TEST, PROT_READ | PROT_WRITE,
               MAP_SHARED | MAP_ANONYMOUS, -1, 0);
   *TEST = 0;

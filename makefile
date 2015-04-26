@@ -1,10 +1,18 @@
-run:		./bin/main.o ./bin/parser.o ./bin/process.o ./bin/mm.o
-		gcc -g -o run ./bin/main.o ./bin/parser.o ./bin/process.o ./bin/mm.o
-./bin/main.o:	./src/main.c ./src/main.h ./src/parser.h ./src/process.h ./src/mm.h
-		gcc -g -c -o ./bin/main.o ./src/main.c
-./bin/parser.o:	./src/parser.c ./src/parser.h ./src/process.h
-		gcc -c -o ./bin/parser.o ./src/parser.c
-./bin/process.o:./src/process.c ./src/process.h
-		gcc -c -o ./bin/process.o ./src/process.c
-./bin/mm.o:	./src/mm.c ./src/mm.h ./src/parser.h
-		gcc -g -c -o ./bin/mm.o ./src/mm.c
+all:		server seller buyer
+
+server:		./bin/server.o
+		gcc -g -o server ./bin/server.o
+./bin/server.o:	./src/server.c ./src/server.h
+		gcc -g -c -o ./bin/server.o ./src/server.c
+
+
+seller:		./bin/seller.o
+		gcc -g -o seller ./bin/seller.o
+./bin/seller.o:	./src/seller.c ./src/seller.h
+		gcc -c -o ./bin/seller.o ./src/seller.c
+
+
+buyer:		./bin/buyer.o
+		gcc -g -o buyer ./bin/buyer.o
+./bin/buyer.o:  ./src/buyer.c ./src/buyer.h
+		gcc -c -o ./bin/buyer.o ./src/buyer.c
