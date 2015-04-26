@@ -1,3 +1,5 @@
+
+-------------------------------------------------------------------
 All server funcs should taken in socket as arg since they will be
 sending info?
 
