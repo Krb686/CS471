@@ -18,7 +18,7 @@ void main(){
   char username[16];
   char data[99];
   char responseStr[32];
-  char *pch;
+  char *pch, *p;
   struct timeval t;
   t.tv_usec = 100000;
 
@@ -81,22 +81,20 @@ void main(){
       }
     }
   } else {
-    printf("\t\t~~~~MENU~~~~\n1)  List\n2) Bid <Item Number> <Bid Amount>\n3) Logout\n~~~~~~~~~~~~~~~~\n");
     while(!logout){
+      printf("\t\t~~~~MENU~~~~\n1)  List\n2) Bid <Item Number> <Bid Amount>\n3) Logout\n~~~~~~~~~~~~~~~~\n");
       printf(">>");
       scanf("%s", data);
       p = data;
       for(;*p;++p) *p = tolower(*p);
       pch = strtok(data, " ");
       if(strcmp(pch, "list") == 0){
-        
+        list();  
       } else if(strcmp(pch, "bid") == 0){
-
+        bid();
       } else if(strcmp(pch, "logout") == 0){
-
-      } else {
-
-      }
+        logout = 0;
+      } 
     }
 
   }
