@@ -15,6 +15,7 @@
 int SELLER_PORT = 5372;
 int BUYER_PORT  = 5373;
 int backlog = 10;
+char *names[6] = {"alice","bob","dave","pam","susan","tom"};
 
 void main() {
   int selsockfd, buysockfd, newsockfd, clilen;
@@ -24,7 +25,6 @@ void main() {
   t.tv_usec = 10000;
   char data[99];
   char *pch, *p, j, *name;
-  char *names[6] = {"alice","bob","dave","pam","susan","tom"};
 
 //  TEST = mmap(NULL, sizeof *TEST, PROT_READ | PROT_WRITE,
 //              MAP_SHARED | MAP_ANONYMOUS, -1, 0);
@@ -152,8 +152,15 @@ void main() {
   }
 }
 
-int clientLogin(){
-  return 0;
+int clientLogin(char *name){
+  int i = 0;
+  while(i<6){
+    if(names[i]!=NULL && strcmp(names[i],name)==0){
+      names[i] = NULL;
+      return LOGINSUCCESS;
+    }
+  }
+  return LOGINFAILED;
 }
 
 int listItems(){
