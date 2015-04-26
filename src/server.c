@@ -18,13 +18,13 @@ static int *seller_on;
 
 void main() {
   int selsockfd, buysockfd, newsockfd, clilen;
-  int pid, ret;
+  int pid, ret, item_number, login=1;
   struct sockaddr_in sel_addr, buy_addr, comm_addr;
   struct timeval t;
   t.tv_usec = 10000;
   char data[99];
+  char *pch, *p;
   int *TEST;
-  int timeout;
 
   TEST = mmap(NULL, sizeof *TEST, PROT_READ | PROT_WRITE,
               MAP_SHARED | MAP_ANONYMOUS, -1, 0);
@@ -55,7 +55,43 @@ void main() {
   if((pid = fork()) == 0){
     newsockfd = accept(selsockfd, (struct sockaddr *)&comm_addr,
                 (socklen_t *)&clilen);
-    
+    while(login){
+      ret = (int)recv(newsockfd, data, sizeof(data), 0);
+      if(ret>0){
+	p = data;
+	printf("Seller sends the command: %s",data);
+	for(;*p;++p) *p = tolower(*p);
+	pch = strtok(data, " ");
+	if(strcmp(pch,"login")==0){
+	  pch = strtok(NULL, " ");
+	  login=clientLogin(pch);//returns 0 on success
+	}
+      }
+    }
+    while(1){
+      ret = (int)recv(newsockfd, data, sizeof(data), 0);
+      if(ret>0){
+	p = data;
+	printf("Seller sends the command: %s",data);
+	for(;*p;++p) *p = tolower(*p);
+	pch = strtok(data, " ");
+	if(strcmp(pch,"list")==0){
+	  listItems();
+        }
+	else if(strcmp(pch,"add")==0){
+	  pch = strtok(NULL, " ");
+	  item_number = atoi(pch);
+	  pch = strtok(NULL, " ");
+	  addItem(item_number, pch);
+	}
+	else if(strcmp(pch,"sell")==0){
+	  pch = strtok(NULL, " ");
+	  item_number = atoi(pch);
+	  sellItem(item_number);
+        }
+	else invalidCommand();
+      }
+    }
   }
   while(1){
     newsockfd = accept(buysockfd, (struct sockaddr *)&comm_addr,
@@ -65,15 +101,15 @@ void main() {
       continue;
     }
     else{
-      setsockopt(newsockfd, SOL_SOCKET, SO_RCVTIMEO,&t,
+//      setsockopt(newsockfd, SOL_SOCKET, SO_RCVTIMEO,&t,
                  sizeof(struct timeval));
       printf("TCP Client Connected...\n");
       (*TEST)++;
       printf("[%d]\n",*TEST);
 
       while(1){
-        timeout = (int)recv(newsockfd, data, sizeof(data), 0);
-	if(timeout>0){
+        ret = (int)recv(newsockfd, data, sizeof(data), 0);
+	if(ret>0){
           printf("data recvd:"); printf("%s",data); printf("\n");
           if(strcmp(data,"exit")==0){
             close(newsockfd);
@@ -83,7 +119,6 @@ void main() {
             exit(0);
           }
 	}
-        //else printf("%d_err:%s%p\n",timeout,strerror(errno),data);
       }
     }
   }

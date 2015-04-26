@@ -1,0 +1,19 @@
+All server funcs should taken in socket as arg since they will be
+sending info?
+
+Or we can just format the info then have a seperate send func or
+just send directly in the code
+
+Or all funcs can return an int corresponding to a certain message
+i.e. login aldlkajsd returns 1 --> invalid user
+login bob returns 0 --> success
+login bob returns 2 --> user already logged on
+
+should we use monitors?
+
+Let's avoid passing in socs unnecesarily, let's just return a code
+that indicates what should be sent, another function can take the
+code and use it to send.
+
+Same with buyer and seller, return a code and another function will
+take care of receiving and printing.

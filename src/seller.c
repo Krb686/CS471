@@ -17,7 +17,7 @@ void main(){
   int sockfd, ret, pid, login=1, logout=0, item_number;
   struct sockaddr_in my_addr, comm_addr;
   char data[99];
-  char *pch;
+  char *pch, *p;
   struct timeval t;
   t.tv_usec = 100000;
 
@@ -44,14 +44,17 @@ void main(){
   while(login){
     printf("Please enter 'login <username>'\n>>");
     scanf("%s",data);
-    char *p = data;
+    p = data;
     for(;*p;++p) *p = tolower(*p);
     if(strncmp(pch,"login ",6)){
       send(sockfd, data, sizeof(data), 0);
       ret = (int)recv(sockfd, data, sizeof(data), 0);
       if(ret>0){
-        printf("%s\n",data);
-        login = 0;
+	if(strcmp(data, "seller logged in")==0){
+          printf("<%s>\n",data);
+          login = 0;
+        }
+        else printf("ERR!\nInvalid username!\n");
       }
       else printf("DEBUG1");
     }
@@ -61,30 +64,31 @@ void main(){
     while(1){
       ret = (int)recv(sockfd, data, sizeof(data), 0);
       if(ret>0){
-        printf("%s\n",data);
+        printf("<%s>\n",data);
       }
     }
   }
-
   else{
     printf("\t\t~~~~MENU~~~~\n1) List\n2) Add <Item Number> <Item Name>\n3) Sell <Item Number>\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
     while(!logout){
       printf(">>");
       scanf("%s",data);
+      p = data;
+      for(;*p;++p) *p = tolower(*p);
       pch = strtok(data, " ");
-      if(strcasecmp(pch,"list")==0){
-	listItems();
+      if(strcmp(pch,"list")==0){
+	list();
       }
-      else if(strcasecmp(pch,"add")==0){
+      else if(strcmp(pch,"add")==0){
 	pch = strtok(NULL, " ");
 	item_number = atoi(pch);
 	pch = strtok(NULL, " ");
-	addItem(item_number,pch);
+	add(item_number,pch);
       }
-      else if(strcasecmp(pch,"sell")==0){
+      else if(strcmp(pch,"sell")==0){
 	pch = strtok(NULL, " ");
 	item_number = atoi(pch);
-	sellItem(item_number);
+	sell(item_number);
       }
       else{
         printf("ERR!\nInvalid command!");
@@ -95,19 +99,19 @@ void main(){
 }
 
 
-void listItems(){
+void list(){
 
 
 }
 
 
-void addItem(){
+void add(){
 
 
 }
 
 
-void sellItem(){
+void sell(){
 
 
 }
