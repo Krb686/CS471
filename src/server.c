@@ -3,6 +3,7 @@
 //#include<sys/types.h>
 //#include<sys/wait.h>
 //#include<strings.h>
+#include<semaphore.h>
 #include<stdlib.h>
 #include<string.h>
 #include<stdio.h>
@@ -18,6 +19,7 @@ int backlog = 10;
 int channel[2];
 char *names[6] = {"alice","bob","dave","pam","susan","tom"};
 itemListP itemlist;
+sem_t mutex;
 
 void main() {
   int selsockfd, buysockfd, newsockfd, clilen;
@@ -28,6 +30,7 @@ void main() {
   char data[99];
   char *pch, *p, j, *name;
 
+  sem_init(&mutex, 1, 1);
   ret = pipe2(channel, O_NONBLOCK);
   if(ret<0) printf("DEBUG pipe->%d_%s",ret,strerror(errno));
 
@@ -180,6 +183,7 @@ void listItems(int sockfd){
 }
 
 int addItem(int item_number, char *pch){
+  updateItemList()
   return 0;
 }
 
@@ -196,5 +200,34 @@ int sendResponse(int newsockfd, int CODE, int ret){
 }
 
 itemListP updateItemList(){
+  int ret = 1;
+  itemP = item = NULL;
+  itemListP head = itemlist;
+
+  sem_wait(&mutex);
+  while(ret>0){
+    if(item != NULL && itemlist->data->id == item->id){
+      itemlist = itemlist->next
+    }
+    ret = (int)read(channel[0], &item, sizeof(itemR))
+    while(itemlist!=NULL){
+      if(itemlist->data->id == item->id) break;
+      if(itemlist->next == NULL){
+        itemlist->next = malloc(sizeof(itemListR));
+        itemlist->next->next = NULL
+        itemlist->next->prev = itemlist;
+        itemlist->next->data = item;
+      }
+      if(itemlist->data->id < item->id){
+	itemlist->prev->next = itemlist->next;
+	itemlist->next->prev = itemlist->prev;
+	free(itemlist->data);
+	free(itemlist);
+      }
+      itemlist = itemlist->next;
+    }
+  }
+  sem_post(&mutex);
+
   return itemlist;
 }
