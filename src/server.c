@@ -23,8 +23,8 @@ void main() {
   struct timeval t;
   t.tv_usec = 10000;
   char data[99];
-  char *pch, *p,j *name;
-  char *names[6] = {"alice","bob","dave","pam","susan","tom"}
+  char *pch, *p, j, *name;
+  char *names[6] = {"alice","bob","dave","pam","susan","tom"};
 
 //  TEST = mmap(NULL, sizeof *TEST, PROT_READ | PROT_WRITE,
 //              MAP_SHARED | MAP_ANONYMOUS, -1, 0);
@@ -77,7 +77,7 @@ void main() {
 	pch = strtok(data, " ");
 	if(strcmp(pch,"list")==0){
 	  ret = listItems();
-	  sendResponse(newsockfd, LIST, ret)
+	  sendResponse(newsockfd, LIST, ret);
         }
 	else if(strcmp(pch,"add")==0){
 	  pch = strtok(NULL, " ");
@@ -110,7 +110,7 @@ void main() {
         ret = (int)recv(newsockfd, data, sizeof(data), 0);
         if(ret>0){
           p = data;
-          printf("Buyer sends the command: %s",pch,data);
+          printf("Buyer sends the command: %s",data);
           for(;*p;++p) *p = tolower(*p);
           pch = strtok(data, " ");
           if(strcmp(pch,"login")==0){
@@ -130,7 +130,7 @@ void main() {
 	  pch = strtok(data, " ");
 	  if(strcmp(pch,"list")==0){
 	    ret = listItems();
-	    sendResponse(newsockfd, LIST, ret)
+	    sendResponse(newsockfd, LIST, ret);
           }
 	  else if(strcmp(pch,"add")==0){
 	    pch = strtok(NULL, " ");
@@ -157,17 +157,21 @@ int clientLogin(){
 }
 
 int listItems(){
-
+  return 0;
 }
 
 int addItem(int item_number, char *pch){
-
+  return 0;
 }
 
 int sellItem(int item_number){
-
+  return 0;
 }
 
 int invalidCommand(){
+  return 0;
+}
 
+int sendResponse(int newsockfd, int CODE, int ret){
+  return 0;
 }

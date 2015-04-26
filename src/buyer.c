@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <ctype.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -14,7 +15,9 @@ char AUCTIONSERVER_IP_ADDRESS[20] = "127.0.0.1";
 void main(){
   int sockfd, ret, pid, login=1, logout=0, item_number;
   struct sockaddr_in my_addr, comm_addr;
+  char username[16];
   char data[99];
+  char responseStr[32];
   char *pch;
   struct timeval t;
   t.tv_usec = 100000;
@@ -39,8 +42,8 @@ void main(){
 
   while(login){
     printf("Please enter 'login <username>'\n>>");
-    scanf("%s", data);
-    pch = strtok(data, " ");
+    scanf("%s", username);
+    pch = strtok(username, " ");
     if(strcasecmp(pch, "login")){
 
       ret = (int)connect(sockfd, (struct sockaddr *)&comm_addr, sizeof(comm_addr));
@@ -50,6 +53,23 @@ void main(){
         exit(0);
       }
 
+      //Send the connection request
+      send(sockfd, username, sizeof(data), 0);
+
+      //Wait for the response
+      ret = (int)recv(sockfd, data, sizeof(data), 0);
+
+      if(ret < 0) {
+        printf("%d_err:%s\n", ret, strerror(errno));
+        exit(0);
+      }
+
+
+      if(strcmp(data, "1") == 0){
+        login = 0;
+      } else {
+        printf("The server rejected the login request.  Please ensure the username is correct\n");
+      }
     }
   }
 }

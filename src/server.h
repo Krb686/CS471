@@ -1,3 +1,10 @@
+#define SELLER_LOGIN 0
+#define LIST 0
+#define ADD 0
+#define SELL 0
+#define INVALID 0
+#define BUYER_LOGIN 0
+
 
 typedef struct ll{
   struct ll *next, *prev;
@@ -5,7 +12,7 @@ typedef struct ll{
 }llR, *llP;
 
 int clientLogin();
-void listItems();
-void addItem(int item_number, char *pch);
-void sellItem(int item_number);
-void invalidCommand();
+int listItems();
+int addItem(int item_number, char *pch);
+int sellItem(int item_number);
+int invalidCommand();
