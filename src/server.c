@@ -15,7 +15,9 @@
 int SELLER_PORT = 5372;
 int BUYER_PORT  = 5373;
 int backlog = 10;
+int channel[2];
 char *names[6] = {"alice","bob","dave","pam","susan","tom"};
+itemListP itemlist;
 
 void main() {
   int selsockfd, buysockfd, newsockfd, clilen;
@@ -25,6 +27,9 @@ void main() {
   t.tv_usec = 10000;
   char data[99];
   char *pch, *p, j, *name;
+
+  ret = pipe2(channel, O_NONBLOCK);
+  if(ret<0) printf("DEBUG pipe->%d_%s",ret,strerror(errno));
 
 //  TEST = mmap(NULL, sizeof *TEST, PROT_READ | PROT_WRITE,
 //              MAP_SHARED | MAP_ANONYMOUS, -1, 0);
@@ -129,8 +134,8 @@ void main() {
 	  for(;*p;++p) *p = tolower(*p);
 	  pch = strtok(data, " ");
 	  if(strcmp(pch,"list")==0){
-	    ret = listItems();
-	    sendResponse(newsockfd, LIST, ret);
+	    listItems(newsockfd);
+	    //sendResponse(newsockfd, LIST, ret);
           }
 	  else if(strcmp(pch,"add")==0){
 	    pch = strtok(NULL, " ");
@@ -163,8 +168,15 @@ int clientLogin(char *name){
   return LOGINFAILED;
 }
 
-int listItems(){
-  return 0;
+void listItems(int sockfd){
+  itemListP iter = updateItemList();
+  if(iter!=NULL) printf("\t\t~~~~ITEMS~~~~\n");
+  while(iter!=NULL){
+    printf("%d) %s %d %s\n",iter->item_number,iter->item_name,
+			    iter->bid,iter->bidder);
+    iter = iter->next;
+  }
+  printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 }
 
 int addItem(int item_number, char *pch){
@@ -181,4 +193,8 @@ int invalidCommand(){
 
 int sendResponse(int newsockfd, int CODE, int ret){
   return 0;
+}
+
+itemListP updateItemList(){
+  return itemlist;
 }

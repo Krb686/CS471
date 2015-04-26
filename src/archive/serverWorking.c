@@ -4,6 +4,7 @@
 //#include<sys/types.h>
 //#include<sys/wait.h>
 //#include<strings.h>
+#include<fcntl.h>
 #include<string.h>
 #include<stdio.h>
 #include<sys/socket.h>
@@ -13,19 +14,42 @@
 
 int server_port = 5372;
 int backlog = 10;
-static int *TEST;
 
+typedef struct items{
+  int item_number, id;
+  char item_name[32];
+}itemR, *itemP;
+
+typedef struct itemList{
+  struct items *next, *prev;
+  itemP data;
+}itemListR,*itemListP;
+
+int channel[2];
 
 void main() {
   int sockfd, newsockfd, clilen;
-  int pid, timeout;
+  int pid, timeout, ret;
   struct sockaddr_in my_addr, comm_addr;
   struct timeval t;
   t.tv_usec = 10000;
   char data[99];
-  TEST = mmap(NULL, sizeof *TEST, PROT_READ | PROT_WRITE,
-              MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-  *TEST = 0;
+  itemP t1 = malloc(sizeof(itemR));
+  t1->item_number = 1;
+  t1->id = 0;
+  strcpy(t1->item_name,"blah");
+  itemP t2 = malloc(sizeof(itemR));
+  t2->item_number = 5;
+  t2->id = 1;
+  strcpy(t2->item_name,"bleh");
+
+  ret = pipe2(channel,O_NONBLOCK);
+  printf("pipe:%d\n",ret);
+  ret = write(channel[1], &t1, sizeof(itemR));
+  printf("wr1:%d\n",ret);
+  ret = write(channel[1], &t2, sizeof(itemR));
+  printf("wr2:%d\n",ret);
+  
 
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
   bzero((char *)&my_addr, sizeof(my_addr));
@@ -54,8 +78,15 @@ void main() {
       setsockopt(newsockfd, SOL_SOCKET, SO_RCVTIMEO,&t,
                  sizeof(struct timeval));
       printf("TCP Client Connected...\n");
-      (*TEST)++;
-      printf("[%d]\n",*TEST);
+      itemP item;
+      ret = (int)read(channel[0], &item, sizeof(itemR));
+      printf("ret:%d\n",ret);
+      if(ret>0){
+	printf("item_number:%d, item_name:%s\n\n",item->item_number, item->item_name);
+      }
+      
+      //item->next = NULL;
+      //printf("[%d]\n",*TEST);
 
       while(1){
         timeout = (int)recv(newsockfd, data, sizeof(data), 0);
@@ -63,8 +94,8 @@ void main() {
           printf("data recvd:"); printf("%s",data); printf("\n");
           if(strcmp(data,"exit")==0){
             close(newsockfd);
-            (*TEST)--;
-            printf("[%d]\n",*TEST);
+            //(*TEST)--;
+            //printf("[%d]\n",*TEST);
             printf("disconnected\n");
             exit(0);
           }

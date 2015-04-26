@@ -4,12 +4,20 @@
 #define ADD		3
 #define SELL		4
 #define INVALID		5
+
 #define LOGINSUCCESS	0
 #define LOGINFAILED	1
 
-typedef struct ll{
-  struct ll *next, *prev;
-  char name[9];
+#define SUCCESS		0
+
+typedef struct items{
+  int item_number, id, bid;
+  char item_name[32], bidder[9];
+}itemR, *itemP;
+
+typedef struct itemList{
+  struct itemList *next, *prev;
+  itemP data;
 }llR, *llP;
 
 int clientLogin();
