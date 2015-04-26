@@ -20,6 +20,10 @@ void main(){
   char responseStr[32];
   char *pch, *p;
   struct timeval t;
+
+  int bidNum;
+  int bidAmt;
+
   t.tv_usec = 100000;
 
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -88,14 +92,33 @@ void main(){
       p = data;
       for(;*p;++p) *p = tolower(*p);
       pch = strtok(data, " ");
+
       if(strcmp(pch, "list") == 0){
         list();  
-      } else if(strcmp(pch, "bid") == 0){
+      } else if(strcmp(pch, "bid") == 0){a
+        pch = strtok(NULL, " ");
+        bidNum = atoi(pch);
+
+        pch = strtok(NULL, " ");
+        bidAmt = atoi(pch);       
+ 
         bid();
       } else if(strcmp(pch, "logout") == 0){
-        logout = 0;
+        
+        logout = 1;
       } 
     }
 
   }
+}
+
+
+void list(){
+
+
+}
+
+void bid(int itemNum, int bidAmt){
+  ret = (int)send(sockfd, username, 
+
 }
