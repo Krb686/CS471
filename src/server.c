@@ -203,7 +203,7 @@ int sendResponse(int newsockfd, int CODE, int ret){
   return 0;
 }
 
-updateItemList(){
+int updateItemList(int flag, itemP newitem){
   int ret;
   itemP item;
   itemListP previtem = NULL;
@@ -258,6 +258,23 @@ updateItemList(){
     free(save);
   }
 
+  if(flag == ADD){//gotta check first
+    itemlist = malloc(sizeof(itemListR));
+    itemlist->next = NULL;
+    itemlist->prev = previtem;
+    if(previtem!=NULL) previtem->next = itemlist;
+    if(head == NULL) head = itemlist;
+    itemlist->data = newitem;
+  }
+  else if(flag == DEL){
+    while(previtem!=newitem){
+      if(previtem==NULL){
+	ret = 
+      }
+    }
+  }
+  else ret = SUCCESS;
+
   itemlist = head;
   while(itemlist!=NULL){
     item = itemlist->data;
@@ -267,4 +284,5 @@ updateItemList(){
 //////////////////////////////////////////////////////////////////////////
   sem_post(&mutex);
   itemlist = head;
+  return ret;
 }
