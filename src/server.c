@@ -14,6 +14,7 @@
 #include"server.h"
 #include<fcntl.h>
 #include<semaphore.h>
+#include<signal.h>
 
 #define MAX_INPUT_SIZE 40
 
@@ -21,18 +22,27 @@ int SELLER_PORT = 5372;
 int BUYER_PORT  = 5373;
 int backlog = 10;
 int channel[2];
-char *names[6] = {"alice","bob","dave","pam","susan","tom"};
+char *names[6] = {"alice\n","bob\n","dave\n","pam\n","susan\n","tom\n"};
 itemListP itemlist;
 sem_t mutex;
+int selsockfd, buysockfd, newsockfd;
+
 
 void main() {
-  int selsockfd, buysockfd, newsockfd, clilen;
+  int clilen;
   int pid, ret, item_number, login=1;
   struct sockaddr_in sel_addr, buy_addr, comm_addr;
   struct timeval t;
   t.tv_usec = 10000;
   char data[MAX_INPUT_SIZE];
   char *pch, *p, j, *name;
+  struct sigaction sa;
+
+
+  sa.sa_handler = sig_handler;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+  sigaction(SIGINT, &sa, NULL);
 
   sem_init(&mutex, 1, 1);
   ret = pipe2(channel, O_NONBLOCK);
@@ -123,8 +133,6 @@ void main() {
 //                 sizeof(struct timeval));
       while(login){
         ret = (int)recv(newsockfd, data, sizeof(char)*MAX_INPUT_SIZE, 0);
-        printf("Data received was of length: %d\n", ret);
-        printf("got some data: %s\n", data);
         if(ret>0){
           p = data;
           printf("Buyer sends the command: %s",data);
@@ -132,7 +140,6 @@ void main() {
           pch = strtok(data, " ");
           printf("%s\n", pch);
           if(strcmp(pch,"login")==0){
-            printf("login command correct\n");
             pch = strtok(NULL, " ");
             login=clientLogin(pch);//returns 0 on success
 	    sendResponse(newsockfd, BUYER_LOGIN, login);
@@ -178,8 +185,6 @@ int clientLogin(char *name){
   int i = 0;
   int code = 0;
   while(i<6){
-    printf("input name:%s\n", name);
-    printf("compared to:%s\n", names[i]);
     printf("\n\n");
     if(names[i]!=NULL){
       code = strcmp(names[i], name);
@@ -321,4 +326,15 @@ int updateItemList(int flag, itemP newitem){
   sem_post(&mutex);
   itemlist = head;
   return ret;
+}
+
+void sig_handler(int signum){
+  printf("Caught CTRL + C\n");
+  printf("Closing the server...\n");
+  close(selsockfd);
+  close(buysockfd);
+  close(newsockfd);
+
+  
+  exit(0);
 }

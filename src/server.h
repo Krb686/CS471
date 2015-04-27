@@ -31,3 +31,4 @@ int listItems();
 int addItem(int item_number, char *pch);
 int sellItem(int item_number);
 int invalidCommand();
+void sig_handler(int signum);
