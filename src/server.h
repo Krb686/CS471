@@ -8,10 +8,10 @@
 #define LOGINSUCCESS	0
 #define LOGINFAILED	1
 
-#define EXISTS		1
-#define UPDATE		0
-#define ADD		1
-#define DEL		2
+#define ITEM_EXISTS		1
+#define ITEM_UPDATE		0
+#define ITEM_ADD		1
+#define ITEM_DEL		2
 
 #define SUCCESS		0
 #define FAIL		-1
