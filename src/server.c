@@ -15,6 +15,8 @@
 #include<fcntl.h>
 #include<semaphore.h>
 
+#define MAX_INPUT_SIZE 32
+
 int SELLER_PORT = 5372;
 int BUYER_PORT  = 5373;
 int backlog = 10;
@@ -29,7 +31,7 @@ void main() {
   struct sockaddr_in sel_addr, buy_addr, comm_addr;
   struct timeval t;
   t.tv_usec = 10000;
-  char data[99];
+  char *data = malloc(MAX_INPUT_SIZE);
   char *pch, *p, j, *name;
 
   sem_init(&mutex, 1, 1);
@@ -106,6 +108,10 @@ void main() {
       }
     }
   }
+
+  // ===============================================================
+  // ===============================================================
+  // Client code
   while(1){
     newsockfd = accept(buysockfd, (struct sockaddr *)&comm_addr,
                 (socklen_t *)&clilen);
@@ -118,19 +124,25 @@ void main() {
       printf("DEBUG2 Connection established\n");
       while(login){
         ret = (int)recv(newsockfd, data, sizeof(data), 0);
+        printf("Data received was of length: %d\n", ret);
+        printf("got some data: %s\n", data);
         if(ret>0){
           p = data;
           printf("Buyer sends the command: %s",data);
           for(;*p;++p) *p = tolower(*p);
           pch = strtok(data, " ");
+          printf("%s\n", pch);
           if(strcmp(pch,"login")==0){
             pch = strtok(NULL, " ");
             login=clientLogin(pch);//returns 0 on success
 	    sendResponse(newsockfd, BUYER_LOGIN, login);
 	    name = pch;
           }
+        } else {
+          printf("ret was < 0\n");
         }
       }
+      printf("skipped the login loop\n");
       while(1){
         ret = (int)recv(newsockfd, data, sizeof(data), 0);
 	if(ret>0){

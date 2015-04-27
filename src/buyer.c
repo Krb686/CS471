@@ -10,6 +10,8 @@
 #include <time.h>
 #include "buyer.h"
 
+#define MAX_INPUT_SIZE 32
+
 int BUYER_PORT = 5373;
 char AUCTIONSERVER_IP_ADDRESS[20] = "127.0.0.1";
 
@@ -17,6 +19,9 @@ void main(){
   int sockfd, ret, pid, login=1, logout=0, item_number;
   struct sockaddr_in my_addr, comm_addr;
   char username[16];
+  char *command = malloc(MAX_INPUT_SIZE);
+  char response[32];
+
   char data[99];
   char responseStr[32];
   char *pch, *p;
@@ -47,34 +52,37 @@ void main(){
 
   while(login){
     printf("Please enter 'login <username>'\n>>");
-    scanf("%s", username);
-    pch = strtok(username, " ");
-    if(strcasecmp(pch, "login")){
 
-      ret = (int)connect(sockfd, (struct sockaddr *)&comm_addr, sizeof(comm_addr));
-
-      if(ret < 0){
-        printf("%d_err:%s\n", ret, strerror(errno));
-        exit(0);
-      }
-
-      //Send the connection request
-      send(sockfd, username, sizeof(data), 0);
-
-      //Wait for the response
-      ret = (int)recv(sockfd, data, sizeof(data), 0);
-
-      if(ret < 0) {
-        printf("%d_err:%s\n", ret, strerror(errno));
-        exit(0);
-      }
+    fgets(command, MAX_INPUT_SIZE, stdin);
 
 
-      if(strcmp(data, "1") == 0){
-        login = 0;
-      } else {
-        printf("The server rejected the login request.  Please ensure the username is correct\n");
-      }
+    //Send the connection request
+    ret = (int)connect(sockfd, (struct sockaddr *)&comm_addr, sizeof(comm_addr));
+
+    if(ret < 0){
+      printf("%d_err:%s\n", ret, strerror(errno));
+      exit(0);
+    } else {
+      printf("Buyer connected successfully!\n");
+    }
+
+    printf("Command is: %s\n", command);
+    //Send the username data 
+    send(sockfd, command, sizeof(command), 0);
+
+    //Wait for the response
+    ret = (int)recv(sockfd, response, sizeof(response), 0);
+
+    if(ret < 0) {
+      printf("%d_err:%s\n", ret, strerror(errno));
+      exit(0);
+    }
+
+    printf("%s\n", response);
+    if(strcmp(response, "1") == 0){
+      login = 0;
+    } else {
+      printf("The server rejected the login request.  Please ensure the username is correct\n");
     }
   }
 
