@@ -1,4 +1,4 @@
-all:		server seller buyer
+all:		server seller buyer clean
 
 server:		server.o
 		gcc server.o -lpthread -o server
