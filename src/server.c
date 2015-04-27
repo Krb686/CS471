@@ -217,6 +217,7 @@ int sendResponse(int newsockfd, int CODE, int ret){
 
 int updateItemList(int flag, itemP newitem){
   int ret;
+  int stat = 0;
   itemP item;
   itemListP previtem = NULL;
   itemListP head = itemlist;
@@ -225,6 +226,7 @@ int updateItemList(int flag, itemP newitem){
 //////////////////////////////////////////////////////////////////////////
   ret = (int)read(channel[0], &item, sizeof(itemR));
   while(ret>0){
+    if(flag!=UPDATE && item->id==newitem->id) stat = EXISTS;
     if(itemlist==NULL){
       itemlist = malloc(sizeof(itemListR));
       itemlist->next = NULL;
@@ -270,7 +272,8 @@ int updateItemList(int flag, itemP newitem){
     free(save);
   }
 
-  if(flag == ADD){//gotta check first
+  ret = SUCCESS;
+  if(flag == ADD && stat != EXISTS){
     itemlist = malloc(sizeof(itemListR));
     itemlist->next = NULL;
     itemlist->prev = previtem;
@@ -278,14 +281,20 @@ int updateItemList(int flag, itemP newitem){
     if(head == NULL) head = itemlist;
     itemlist->data = newitem;
   }
-  else if(flag == DEL){
-    while(previtem!=newitem){
-      if(previtem==NULL){
-	ret = 
-      }
+  else if(flag == ADD) ret = EXISTS
+  else if(flag == DEL && stat == EXISTS){
+    itemListP iter = head;
+    while(iter->data->id!=newitem->id){
+      if(iter==NULL){printf("DEBUG3\n"); exit(0);}//shouldn't happen
+      iter = iter->next
     }
+    if(iter->prev!=NULL) iter->prev->next = iter->next;
+    if(iter->next!=NULL) iter->next->prev = iter->prev;
+    if(iter==head) head = iter->next;
+    free(iter->data);
+    free(iter);
   }
-  else ret = SUCCESS;
+  else if(flag == DEL) ret = FAIL
 
   itemlist = head;
   while(itemlist!=NULL){
