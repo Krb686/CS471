@@ -10,7 +10,8 @@
 #include <time.h>
 #include "buyer.h"
 
-#define MAX_INPUT_SIZE 32
+#define MAX_INPUT_SIZE 40
+
 
 int BUYER_PORT = 5373;
 char AUCTIONSERVER_IP_ADDRESS[20] = "127.0.0.1";
@@ -19,11 +20,11 @@ void main(){
   int sockfd, ret, pid, login=1, logout=0, item_number;
   struct sockaddr_in my_addr, comm_addr;
   char username[16];
-  char *command = malloc(sizeof(char) * MAX_INPUT_SIZE);
+  char command[MAX_INPUT_SIZE];
   char response[32];
   int bytesSent = 0;
 
-  char data[99];
+  char data[MAX_INPUT_SIZE];
   char responseStr[32];
   char *pch, *p;
   struct timeval t;
@@ -67,13 +68,13 @@ void main(){
       printf("Buyer connected successfully!\n");
     }
 
-    printf("Command is: %s\n", command);
     //Send the username data 
-    bytesSent = send(sockfd, command, sizeof(command), 0);
+    bytesSent = send(sockfd, command, MAX_INPUT_SIZE, 0);
 
-    printf("Sent %d bytes\n", bytesSent);
+    //printf("Sent %d bytes\n", bytesSent);
+    
     //Wait for the response
-    ret = (int)recv(sockfd, response, sizeof(response), 0);
+    ret = (int)recv(sockfd, response, sizeof(char)*MAX_INPUT_SIZE, 0);
 
     if(ret < 0) {
       printf("%d_err:%s\n", ret, strerror(errno));
@@ -91,7 +92,7 @@ void main(){
   //Loop and print output responses from the server
   if((pid = fork()) != 0){
     while(1){
-      ret = (int)recv(sockfd, data, sizeof(data), 0);
+      ret = (int)recv(sockfd, data, sizeof(char)*MAX_INPUT_SIZE, 0);
       if(ret > 0){
         printf("<%s>\n", data);
       }

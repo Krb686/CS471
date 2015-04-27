@@ -15,7 +15,7 @@
 #include<fcntl.h>
 #include<semaphore.h>
 
-#define MAX_INPUT_SIZE 32
+#define MAX_INPUT_SIZE 40
 
 int SELLER_PORT = 5372;
 int BUYER_PORT  = 5373;
@@ -31,7 +31,7 @@ void main() {
   struct sockaddr_in sel_addr, buy_addr, comm_addr;
   struct timeval t;
   t.tv_usec = 10000;
-  char *data = malloc(sizeof(char) * MAX_INPUT_SIZE);
+  char data[MAX_INPUT_SIZE];
   char *pch, *p, j, *name;
 
   sem_init(&mutex, 1, 1);
@@ -81,7 +81,7 @@ void main() {
       }
     }
     while(1){
-      ret = (int)recv(newsockfd, data, sizeof(data), 0);
+      ret = (int)recv(newsockfd, data, sizeof(char)*MAX_INPUT_SIZE, 0);
       if(ret>0){
 	p = data;
 	printf("Seller sends the command: %s",data);
@@ -121,9 +121,8 @@ void main() {
     else{
 //      setsockopt(newsockfd, SOL_SOCKET, SO_RCVTIMEO,&t,
 //                 sizeof(struct timeval));
-      printf("DEBUG2 Connection established\n");
       while(login){
-        ret = (int)recv(newsockfd, data, sizeof(data), 0);
+        ret = (int)recv(newsockfd, data, sizeof(char)*MAX_INPUT_SIZE, 0);
         printf("Data received was of length: %d\n", ret);
         printf("got some data: %s\n", data);
         if(ret>0){
@@ -133,6 +132,7 @@ void main() {
           pch = strtok(data, " ");
           printf("%s\n", pch);
           if(strcmp(pch,"login")==0){
+            printf("login command correct\n");
             pch = strtok(NULL, " ");
             login=clientLogin(pch);//returns 0 on success
 	    sendResponse(newsockfd, BUYER_LOGIN, login);
@@ -144,7 +144,7 @@ void main() {
       }
       printf("skipped the login loop\n");
       while(1){
-        ret = (int)recv(newsockfd, data, sizeof(data), 0);
+        ret = (int)recv(newsockfd, data, sizeof(char)*MAX_INPUT_SIZE, 0);
 	if(ret>0){
 	  p = data;
 	  printf("%s sends the command: %s",name,data);
@@ -176,12 +176,23 @@ void main() {
 
 int clientLogin(char *name){
   int i = 0;
+  int code = 0;
   while(i<6){
-    if(names[i]!=NULL && strcmp(names[i],name)==0){
-      names[i] = NULL;
-      return LOGINSUCCESS;
+    printf("input name:%s\n", name);
+    printf("compared to:%s\n", names[i]);
+    printf("\n\n");
+    if(names[i]!=NULL){
+      code = strcmp(names[i], name);
+      printf("\n%d\n", code);
+      if(code == 0){
+        names[i] = NULL;
+        printf("returning success\n");
+        return LOGINSUCCESS;
+      }
     }
+    i++;
   }
+  printf("returning failure\n");
   return LOGINFAILED;
 }
 
@@ -212,6 +223,8 @@ int invalidCommand(){
 }
 
 int sendResponse(int newsockfd, int CODE, int ret){
+  printf("%d\n", CODE);
+  printf("%d\n", ret);
   return 0;
 }
 
