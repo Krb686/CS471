@@ -20,6 +20,7 @@
 int SELLER_PORT = 5372;
 int BUYER_PORT  = 5373;
 int backlog = 10;
+int item_count = 0;
 int channel[2];
 char *names[6] = {"alice","bob","dave","pam","susan","tom"};
 itemListP itemlist;
@@ -37,9 +38,6 @@ void main() {
   sem_init(&mutex, 1, 1);
   ret = pipe2(channel, O_NONBLOCK);
   if(ret<0) printf("DEBUG pipe->%d_%s",ret,strerror(errno));
-
-//  TEST = mmap(NULL, sizeof *TEST, PROT_READ | PROT_WRITE,
-//              MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
   selsockfd = socket(AF_INET, SOCK_STREAM, 0);
   buysockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -60,9 +58,6 @@ void main() {
   clilen = sizeof(comm_addr);
   printf("Waiting for client connections...\n");
 
-//  int flags;
-//  if(-1 == (flags = fcntl(sockfd, F_GETFL, 0))) flags = 0;
-//  fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
   if((pid = fork()) == 0){
     newsockfd = accept(selsockfd, (struct sockaddr *)&comm_addr,
                 (socklen_t *)&clilen);
@@ -75,11 +70,11 @@ void main() {
 	pch = strtok(data, " ");
 	if(strcmp(pch,"login")==0){
 	  pch = strtok(NULL, " ");
-	  if(strcmp(pch,"seller")==0) login = 0;
+	  if(strcmp(pch,"seller\n")==0) login = 0;
 	  sendResponse(newsockfd, SELLER_LOGIN, login);
-	}
-      }
-    }
+	}//pch==login
+      }//ret>0
+    }//login==1
     while(1){
       ret = (int)recv(newsockfd, data, sizeof(data), 0);
       if(ret>0){
@@ -105,74 +100,73 @@ void main() {
 	  sendResponse(newsockfd, SELL, ret);
         }
 	else sendResponse(newsockfd, INVALID, 0);
+      }//ret>0
+    }//True
+  }//end child
+  else{//parent
+    // ===============================================================
+    // ===============================================================
+    // BUYER code
+    while(1){
+      newsockfd = accept(buysockfd, (struct sockaddr *)&comm_addr,
+                  (socklen_t *)&clilen);
+      if((pid = fork()) != 0){
+        close(newsockfd);
       }
-    }
-  }
-
-  // ===============================================================
-  // ===============================================================
-  // Client code
-  while(1){
-    newsockfd = accept(buysockfd, (struct sockaddr *)&comm_addr,
-                (socklen_t *)&clilen);
-    if((pid = fork()) != 0){
-      close(newsockfd);
-    }
-    else{
-//      setsockopt(newsockfd, SOL_SOCKET, SO_RCVTIMEO,&t,
-//                 sizeof(struct timeval));
-      printf("DEBUG2 Connection established\n");
-      while(login){
-        ret = (int)recv(newsockfd, data, sizeof(data), 0);
-        printf("Data received was of length: %d\n", ret);
-        printf("got some data: %s\n", data);
-        if(ret>0){
-          p = data;
-          printf("Buyer sends the command: %s",data);
-          for(;*p;++p) *p = tolower(*p);
-          pch = strtok(data, " ");
-          printf("%s\n", pch);
-          if(strcmp(pch,"login")==0){
-            pch = strtok(NULL, " ");
-            login=clientLogin(pch);//returns 0 on success
-	    sendResponse(newsockfd, BUYER_LOGIN, login);
-	    name = pch;
+      else{
+        printf("DEBUG2 Connection established\n");
+        while(login){
+          ret = (int)recv(newsockfd, data, sizeof(data), 0);
+          printf("Data received was of length: %d\n", ret);
+          printf("got some data: %s\n", data);
+          if(ret>0){
+            p = data;
+            printf("Buyer sends the command: %s",data);
+            for(;*p;++p) *p = tolower(*p);
+            pch = strtok(data, " ");
+            printf("%s\n", pch);
+            if(strcmp(pch,"login")==0){
+              pch = strtok(NULL, " ");
+              login=clientLogin(pch);//returns 0 on success
+              sendResponse(newsockfd, BUYER_LOGIN, login);
+              name = pch;
+            }
+          } else {
+            printf("ret was < 0\n");
           }
-        } else {
-          printf("ret was < 0\n");
         }
-      }
-      printf("skipped the login loop\n");
-      while(1){
-        ret = (int)recv(newsockfd, data, sizeof(data), 0);
-	if(ret>0){
-	  p = data;
-	  printf("%s sends the command: %s",name,data);
-	  for(;*p;++p) *p = tolower(*p);
-	  pch = strtok(data, " ");
-	  if(strcmp(pch,"list")==0){
-	    listItems(newsockfd);
-	    //sendResponse(newsockfd, LIST, ret);
-          }
-	  else if(strcmp(pch,"add")==0){
-	    pch = strtok(NULL, " ");
-	    item_number = atoi(pch);
-	    pch = strtok(NULL, " ");
-	    ret = addItem(item_number, pch);
-	    sendResponse(newsockfd, ADD, ret);
-	  }
-	  else if(strcmp(pch,"sell")==0){
-	    pch = strtok(NULL, " ");
-	    item_number = atoi(pch);
-	    ret = sellItem(item_number);
-	    sendResponse(newsockfd, SELL, ret);
-          }
-	  else sendResponse(newsockfd, INVALID, 0);
-	}
-      }
-    }
-  }
-}
+        printf("skipped the login loop\n");
+        while(1){
+          ret = (int)recv(newsockfd, data, sizeof(data), 0);
+          if(ret>0){
+            p = data;
+            printf("%s sends the command: %s",name,data);
+            for(;*p;++p) *p = tolower(*p);
+            pch = strtok(data, " ");
+            if(strcmp(pch,"list")==0){
+              listItems(newsockfd);
+              //sendResponse(newsockfd, LIST, ret);
+            }
+            else if(strcmp(pch,"add")==0){
+              pch = strtok(NULL, " ");
+              item_number = atoi(pch);
+              pch = strtok(NULL, " ");
+              ret = addItem(item_number, pch);
+              sendResponse(newsockfd, ADD, ret);
+            }
+            else if(strcmp(pch,"sell")==0){
+              pch = strtok(NULL, " ");
+              item_number = atoi(pch);
+              ret = sellItem(item_number);
+              sendResponse(newsockfd, SELL, ret);
+            }
+            else sendResponse(newsockfd, INVALID, 0);
+          }//ret>0
+        }//True
+      }//childn
+    }//True
+  }//end parent
+}//main
 
 int clientLogin(char *name){
   int i = 0;
@@ -186,7 +180,7 @@ int clientLogin(char *name){
 }
 
 int listItems(int sockfd){
-  updateItemList();
+  updateItemList(ITEM_UPDATE,NULL);
   itemListP iter = itemlist;
   if(iter!=NULL) printf("\t\t~~~~ITEMS~~~~\n");
   while(iter!=NULL){
@@ -199,12 +193,27 @@ int listItems(int sockfd){
 }
 
 int addItem(int item_number, char *pch){
-  updateItemList();
-  return 0;
+  int ret;
+  itemP item = malloc(sizeof(itemR));
+  item->item_number = item_number;
+  item->id = item_count++;
+  item->bid = 0;
+  strcpy(item->item_name,pch);
+  item->bidder = NULL;
+  ret = updateItemList(ITEM_ADD, item);
+  if(ret!=SUCCESS) free(item);
+  return ret;
 }
 
 int sellItem(int item_number){
-  return 0;
+  itemListP iter = itemlist;
+  while(iter!=NULL){
+    if(iter->data->id == item_number){
+      return updateItemList(ITEM_DEL, iter->data);
+    }
+    iter = iter->next;
+  }
+  return FAIL;
 }
 
 int invalidCommand(){
@@ -218,7 +227,7 @@ int sendResponse(int newsockfd, int CODE, int ret){
 int updateItemList(int flag, itemP newitem){
   int ret;
   int stat = 0;
-  itemP item;
+  itemP item = malloc(sizeof(itemR));
   itemListP previtem = NULL;
   itemListP head = itemlist;
 
@@ -227,6 +236,9 @@ int updateItemList(int flag, itemP newitem){
   ret = (int)read(channel[0], &item, sizeof(itemR));
   while(ret>0){
     if(flag!=ITEM_UPDATE && item->id==newitem->id) stat = ITEM_EXISTS;
+    if(flag==ITEM_ADD && item->item_number==newitem->item_number){
+      stat = ITEM_EXISTS;
+    }
     if(itemlist==NULL){
       itemlist = malloc(sizeof(itemListR));
       itemlist->next = NULL;
@@ -259,8 +271,10 @@ int updateItemList(int flag, itemP newitem){
     }
     previtem = itemlist;
     itemlist = itemlist->next;
+    item = malloc(sizeof(itemR));
     ret = (int)read(channel[0], &item, sizeof(itemR));
   }//while(ret>0)
+  free(item);
 
   while(itemlist!=NULL){
     if(itemlist->prev!=NULL) itemlist->prev->next = itemlist->next;
@@ -281,9 +295,7 @@ int updateItemList(int flag, itemP newitem){
     if(head == NULL) head = itemlist;
     itemlist->data = newitem;
   }
-  else if(flag == ITEM_ADD){
-    ret = ITEM_EXISTS;
-  }
+  else if(flag == ITEM_ADD) ret = ITEM_EXISTS;
   else if(flag == ITEM_DEL && stat == ITEM_EXISTS){
     itemListP iter = head;
     while(iter->data->id!=newitem->id){
