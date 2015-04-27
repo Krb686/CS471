@@ -92,10 +92,11 @@ void main(){
       scanf("%s", data);
       p = data;
       for(;*p;++p) *p = tolower(*p);
+      p = data;
       pch = strtok(data, " ");
 
       if(strcmp(pch, "list") == 0){
-        list();  
+        list(sockfd);  
       } else if(strcmp(pch, "bid") == 0){a
         pch = strtok(NULL, " ");
         bidNum = atoi(pch);
@@ -103,7 +104,7 @@ void main(){
         pch = strtok(NULL, " ");
         bidAmt = atoi(pch);       
  
-        bid();
+        bid(sockfd, p);
       } else if(strcmp(pch, "logout") == 0){
         
         logout = 1;
@@ -114,12 +115,11 @@ void main(){
 }
 
 
-void list(){
-
-
+void list(int sockfd){
+  char data[] = "list";
+  send(sockfd, data, sizeof(data), 0);
 }
 
-void bid(int itemNum, int bidAmt){
-  ret = (int)send(sockfd, username, 
-
+void bid(int sockfd, char *p){
+  send(sockfd, p, sizeof(p), 0);
 }
