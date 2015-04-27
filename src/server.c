@@ -31,7 +31,7 @@ void main() {
   struct sockaddr_in sel_addr, buy_addr, comm_addr;
   struct timeval t;
   t.tv_usec = 10000;
-  char *data = malloc(MAX_INPUT_SIZE);
+  char *data = malloc(sizeof(char) * MAX_INPUT_SIZE);
   char *pch, *p, j, *name;
 
   sem_init(&mutex, 1, 1);

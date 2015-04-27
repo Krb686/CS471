@@ -19,8 +19,9 @@ void main(){
   int sockfd, ret, pid, login=1, logout=0, item_number;
   struct sockaddr_in my_addr, comm_addr;
   char username[16];
-  char *command = malloc(MAX_INPUT_SIZE);
+  char *command = malloc(sizeof(char) * MAX_INPUT_SIZE);
   char response[32];
+  int bytesSent = 0;
 
   char data[99];
   char responseStr[32];
@@ -68,8 +69,9 @@ void main(){
 
     printf("Command is: %s\n", command);
     //Send the username data 
-    send(sockfd, command, sizeof(command), 0);
+    bytesSent = send(sockfd, command, sizeof(command), 0);
 
+    printf("Sent %d bytes\n", bytesSent);
     //Wait for the response
     ret = (int)recv(sockfd, response, sizeof(response), 0);
 
