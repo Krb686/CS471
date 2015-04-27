@@ -1,6 +1,3 @@
-
-
-
-void listItems();
-void addItem();
-void sellItem();
+void list();
+void add();
+void sell();

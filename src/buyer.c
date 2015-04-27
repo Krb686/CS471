@@ -8,6 +8,7 @@
 #include <sys/mman.h>
 #include <netinet/in.h>
 #include <time.h>
+#include "buyer.h"
 
 int BUYER_PORT = 5373;
 char AUCTIONSERVER_IP_ADDRESS[20] = "127.0.0.1";
@@ -97,7 +98,7 @@ void main(){
 
       if(strcmp(pch, "list") == 0){
         list(sockfd);  
-      } else if(strcmp(pch, "bid") == 0){a
+      } else if(strcmp(pch, "bid") == 0){
         pch = strtok(NULL, " ");
         bidNum = atoi(pch);
 

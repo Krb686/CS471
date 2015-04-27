@@ -13,6 +13,7 @@
 #include<time.h>
 #include"server.h"
 #include<fcntl.h>
+#include<semaphore.h>
 
 int SELLER_PORT = 5372;
 int BUYER_PORT  = 5373;
@@ -177,8 +178,8 @@ int listItems(int sockfd){
   itemListP iter = itemlist;
   if(iter!=NULL) printf("\t\t~~~~ITEMS~~~~\n");
   while(iter!=NULL){
-    printf("%d) %s %d %s\n",iter->item_number,iter->item_name,
-			    iter->bid,iter->bidder);
+    printf("%d) %s %d %s\n",iter->data->item_number,iter->data->item_name,
+			    iter->data->bid,iter->data->bidder);
     iter = iter->next;
   }
   printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
