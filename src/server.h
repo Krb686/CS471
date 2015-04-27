@@ -3,7 +3,8 @@
 #define LIST		2
 #define ADD		3
 #define SELL		4
-#define INVALID		5
+#define BID		5
+#define INVALID		-1
 
 #define LOGINSUCCESS	0
 #define LOGINFAILED	1

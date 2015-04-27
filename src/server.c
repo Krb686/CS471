@@ -154,18 +154,12 @@ void main() {
               listItems(newsockfd);
               //sendResponse(newsockfd, LIST, ret);
             }
-            else if(strcmp(pch,"add")==0){
+            else if(strcmp(pch,"bid")==0){
               pch = strtok(NULL, " ");
               item_number = atoi(pch);
               pch = strtok(NULL, " ");
-              ret = addItem(item_number, pch);
-              sendResponse(newsockfd, ADD, ret);
-            }
-            else if(strcmp(pch,"sell")==0){
-              pch = strtok(NULL, " ");
-              item_number = atoi(pch);
-              ret = sellItem(item_number);
-              sendResponse(newsockfd, SELL, ret);
+              ret = bidOnItem(item_number, atoi(pch), name);
+              sendResponse(newsockfd, BID, ret);
             }
             else sendResponse(newsockfd, INVALID, 0);
           }//ret>0
@@ -224,10 +218,25 @@ int addItem(int item_number, char *pch){
 int sellItem(int item_number){
   itemListP iter = itemlist;
   while(iter!=NULL){
-    if(iter->data->id == item_number){
+    if(iter->data->item_number == item_number){
       return updateItemList(ITEM_DEL, iter->data);
     }
     iter = iter->next;
+  }
+  return FAIL;
+}
+
+int bidOnItem(int item_number, int bid_amount, char *name){
+  itemListP iter = itemlist;
+  while(iter!=NULL){
+    if(iter->data->item_number == item_number){
+      if(iter->data->bid < bid_amount){
+	iter->data->bidder = name;
+	iter->data->bid = bid_amount;
+      }
+      ret = updateItemList(ITEM_UPDATE, NULL);
+      return ret;
+    }
   }
   return FAIL;
 }
