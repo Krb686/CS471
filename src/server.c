@@ -173,7 +173,8 @@ int clientLogin(char *name){
 }
 
 int listItems(int sockfd){
-  itemListP iter = updateItemList();
+  updateItemList();
+  itemListP iter = itemlist;
   if(iter!=NULL) printf("\t\t~~~~ITEMS~~~~\n");
   while(iter!=NULL){
     printf("%d) %s %d %s\n",iter->item_number,iter->item_name,
@@ -201,35 +202,68 @@ int sendResponse(int newsockfd, int CODE, int ret){
   return 0;
 }
 
-itemListP updateItemList(){
-  int ret = 1;
-  itemP = item = NULL;
+updateItemList(){
+  int ret;
+  itemP item;
+  itemListP previtem = NULL;
   itemListP head = itemlist;
 
   sem_wait(&mutex);
+//////////////////////////////////////////////////////////////////////////
+  ret = (int)read(channel[0], &item, sizeof(itemR));
   while(ret>0){
-    if(item != NULL && itemlist->data->id == item->id){
-      itemlist = itemlist->next
+    if(itemlist==NULL){
+      itemlist = malloc(sizeof(itemListR));
+      itemlist->next = NULL;
+      itemlist->prev = previtem;
+      if(previtem!=NULL) previtem->next = itemlist;
+      if(head == NULL) head = itemlist;
+      itemlist->data = item;
     }
-    ret = (int)read(channel[0], &item, sizeof(itemR))
-    while(itemlist!=NULL){
-      if(itemlist->data->id == item->id) break;
-      if(itemlist->next == NULL){
-        itemlist->next = malloc(sizeof(itemListR));
-        itemlist->next->next = NULL
-        itemlist->next->prev = itemlist;
-        itemlist->next->data = item;
-      }
-      if(itemlist->data->id < item->id){
-	itemlist->prev->next = itemlist->next;
-	itemlist->next->prev = itemlist->prev;
-	free(itemlist->data);
-	free(itemlist);
-      }
+    else if(itemlist->data->id < item->id){
+      if(itemlist->prev!=NULL) itemlist->prev->next = itemlist->next;
+      if(itemlist->next!=NULL) itemlist->next->prev = itemlist->prev;
+      if(itemlist==head) head = itemlist->next;
+      itemListP save = itemlist;
+      previtem = itemlist->prev;
       itemlist = itemlist->next;
+      free(save->data);
+      free(save);
+      continue;
     }
-  }
-  sem_post(&mutex);
+    else if(itemlist->data->id > item->id){
+      itemlist->prev = malloc(sizeof(itemListR));
+      itemlist->prev->next = itemlist;
+      itemlist->prev->prev = previtem;
+      itemlist->prev->data = item;
+      if(previtem!=NULL) previtem->next = itemlist->prev;
+      if(itemlist==head) head = itemlist->prev;
+      previtem = itemlist->prev;
+      ret = (int)read(channel[0], &item, sizeof(itemR));
+      continue;
+    }
+    previtem = itemlist;
+    itemlist = itemlist->next;
+    ret = (int)read(channel[0], &item, sizeof(itemR));
+  }//while(ret>0)
 
-  return itemlist;
+  while(itemlist!=NULL){
+    if(itemlist->prev!=NULL) itemlist->prev->next = itemlist->next;
+    if(itemlist->next!=NULL) itemlist->next->prev = itemlist->prev;
+    if(itemlist==head) head = itemlist->next;
+    itemListP save = itemlist;
+    itemlist = itemlist->next;
+    free(save->data);
+    free(save);
+  }
+
+  itemlist = head;
+  while(itemlist!=NULL){
+    item = itemlist->data;
+    write(channel[1], &item, sizeof(itemR));
+    itemlist = itemlist->next;
+  }
+//////////////////////////////////////////////////////////////////////////
+  sem_post(&mutex);
+  itemlist = head;
 }
