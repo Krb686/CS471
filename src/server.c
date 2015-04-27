@@ -14,26 +14,36 @@
 #include"server.h"
 #include<fcntl.h>
 #include<semaphore.h>
+#include<signal.h>
 
-#define MAX_INPUT_SIZE 32
+#define MAX_INPUT_SIZE 40
 
 int SELLER_PORT = 5372;
 int BUYER_PORT  = 5373;
 int backlog = 10;
 int item_count = 0;
 int channel[2];
-char *names[6] = {"alice","bob","dave","pam","susan","tom"};
+char *names[6] = {"alice\n","bob\n","dave\n","pam\n","susan\n","tom\n"};
 itemListP itemlist;
 sem_t mutex;
+int selsockfd, buysockfd, newsockfd;
+
 
 void main() {
-  int selsockfd, buysockfd, newsockfd, clilen;
+  int clilen;
   int pid, ret, item_number, login=1;
   struct sockaddr_in sel_addr, buy_addr, comm_addr;
   struct timeval t;
   t.tv_usec = 10000;
-  char *data = malloc(sizeof(char) * MAX_INPUT_SIZE);
+  char data[MAX_INPUT_SIZE];
   char *pch, *p, j, *name;
+  struct sigaction sa;
+
+
+  sa.sa_handler = sig_handler;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+  sigaction(SIGINT, &sa, NULL);
 
   sem_init(&mutex, 1, 1);
   ret = pipe2(channel, O_NONBLOCK);
@@ -76,7 +86,7 @@ void main() {
       }//ret>0
     }//login==1
     while(1){
-      ret = (int)recv(newsockfd, data, sizeof(data), 0);
+      ret = (int)recv(newsockfd, data, sizeof(char)*MAX_INPUT_SIZE, 0);
       if(ret>0){
 	p = data;
 	printf("Seller sends the command: %s",data);
@@ -114,11 +124,8 @@ void main() {
         close(newsockfd);
       }
       else{
-        printf("DEBUG2 Connection established\n");
         while(login){
-          ret = (int)recv(newsockfd, data, sizeof(data), 0);
-          printf("Data received was of length: %d\n", ret);
-          printf("got some data: %s\n", data);
+          ret = (int)recv(newsockfd, data, sizeof(char)*MAX_INPUT_SIZE, 0);
           if(ret>0){
             p = data;
             printf("Buyer sends the command: %s",data);
@@ -137,7 +144,7 @@ void main() {
         }
         printf("skipped the login loop\n");
         while(1){
-          ret = (int)recv(newsockfd, data, sizeof(data), 0);
+          ret = (int)recv(newsockfd, data, sizeof(char)*MAX_INPUT_SIZE, 0);
           if(ret>0){
             p = data;
             printf("%s sends the command: %s",name,data);
@@ -170,12 +177,21 @@ void main() {
 
 int clientLogin(char *name){
   int i = 0;
+  int code = 0;
   while(i<6){
-    if(names[i]!=NULL && strcmp(names[i],name)==0){
-      names[i] = NULL;
-      return LOGINSUCCESS;
+    printf("\n\n");
+    if(names[i]!=NULL){
+      code = strcmp(names[i], name);
+      printf("\n%d\n", code);
+      if(code == 0){
+        names[i] = NULL;
+        printf("returning success\n");
+        return LOGINSUCCESS;
+      }
     }
+    i++;
   }
+  printf("returning failure\n");
   return LOGINFAILED;
 }
 
@@ -221,6 +237,8 @@ int invalidCommand(){
 }
 
 int sendResponse(int newsockfd, int CODE, int ret){
+  printf("%d\n", CODE);
+  printf("%d\n", ret);
   return 0;
 }
 
@@ -320,4 +338,15 @@ int updateItemList(int flag, itemP newitem){
   sem_post(&mutex);
   itemlist = head;
   return ret;
+}
+
+void sig_handler(int signum){
+  printf("Caught CTRL + C\n");
+  printf("Closing the server...\n");
+  close(selsockfd);
+  close(buysockfd);
+  close(newsockfd);
+
+  
+  exit(0);
 }
