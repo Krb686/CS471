@@ -1,1 +1,1 @@
-netstat -ap | grep :5372
+sudo netstat -antlp | grep :5372

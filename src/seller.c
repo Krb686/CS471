@@ -86,10 +86,12 @@ void main(){
     printf("\t\t~~~~MENU~~~~\n1) List\n2) Add <Item Number> <Item Name>\n3) Sell <Item Number>\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
     while(!logout){
       printf(">>");
-      scanf("%s",data);
-      p = data;
+      strcpy(command, "");
+      fgets(command, MAX_INPUT_SIZE, stdin);
+
+      p = command;
       for(;*p;++p) *p = tolower(*p);
-      pch = strtok(data, " ");
+      pch = strtok(command, " ");
       printf("command was: %s\n", pch);
       if(strcmp(pch,"list")==0){
 	ret = send(sockfd,pch,strlen(pch)+1,0);
@@ -97,9 +99,9 @@ void main(){
 //	list();
       }
       else if(strcmp(pch,"add")==0){
-        printf("adding...\n");
 	pch = strtok(NULL, " ");
 	item_number = atoi(pch);
+        
 	pch = strtok(NULL, " ");
 	add(item_number,pch);
       }

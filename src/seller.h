@@ -1,4 +1,4 @@
 void list();
-void add(int item_number, char *string);
+void add();
 void sell();
 void sig_handler(int signum);
