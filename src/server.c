@@ -256,6 +256,10 @@ int sendResponse(int newsockfd, int from, int code){
     ret = (int)send(newsockfd, responseStr, sizeof(char)*MAX_INPUT_SIZE, 0);
     printf("response ret: %d\n", ret);
   }
+  else if(from == SELLER_LOGIN){
+    ret = (int)send(newsockfd, responseStr, sizeof(char)*MAX_INPUT_SIZE, 0);
+    printf("response ret: %d\n", ret);
+  }
 
   return 0;
 }
