@@ -248,8 +248,13 @@ int sendResponse(int newsockfd, int from, int code){
 
   int ret = 0;
 
+  char responseStr[MAX_INPUT_SIZE];
+
+  sprintf(responseStr, "%d", code);  
+
   if(from == BUYER_LOGIN){
-    ret = (int)send(newsockfd, &code, sizeof(char)*MAX_INPUT_SIZE, 0);
+    ret = (int)send(newsockfd, responseStr, sizeof(char)*MAX_INPUT_SIZE, 0);
+    printf("response ret: %d\n", ret);
   }
 
   return 0;
