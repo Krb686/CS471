@@ -209,7 +209,7 @@ int addItem(int item_number, char *pch){
   item->id = item_count++;
   item->bid = 0;
   strcpy(item->item_name,pch);
-  item->bidder = NULL;
+  strcpy(item->bidder,"");
   ret = updateItemList(ITEM_ADD, item);
   if(ret!=SUCCESS) free(item);
   return ret;
@@ -231,11 +231,10 @@ int bidOnItem(int item_number, int bid_amount, char *name){
   while(iter!=NULL){
     if(iter->data->item_number == item_number){
       if(iter->data->bid < bid_amount){
-	iter->data->bidder = name;
+	strcpy(iter->data->bidder,name);
 	iter->data->bid = bid_amount;
       }
-      ret = updateItemList(ITEM_UPDATE, NULL);
-      return ret;
+      return updateItemList(ITEM_UPDATE, NULL);
     }
   }
   return FAIL;
