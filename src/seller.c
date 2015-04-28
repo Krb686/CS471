@@ -90,12 +90,14 @@ void main(){
       p = data;
       for(;*p;++p) *p = tolower(*p);
       pch = strtok(data, " ");
+      printf("command was: %s\n", pch);
       if(strcmp(pch,"list")==0){
 	ret = send(sockfd,pch,strlen(pch)+1,0);
 	printf("sent:%s, ret:%d\n",pch,ret);
 //	list();
       }
       else if(strcmp(pch,"add")==0){
+        printf("adding...\n");
 	pch = strtok(NULL, " ");
 	item_number = atoi(pch);
 	pch = strtok(NULL, " ");
@@ -121,9 +123,9 @@ void list(){
 }
 
 
-void add(){
-
-
+void add(int item_number, char *string){
+  printf("item number: %d\n", item_number);
+  printf("string: %s\n", string);
 }
 
 

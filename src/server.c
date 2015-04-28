@@ -87,23 +87,24 @@ void main() {
     }//login==1
     printf("exit login\n");
     while(1){
-      strcpy(data,"  ");
-      printf("DEBUG --%s--\n",data);
+      strcpy(data,"");
       ret = (int)recv(newsockfd, data, sizeof(data), 0);
-      printf("DEBUG --%s--,ret:%d\n",data,ret);
       if(ret>0){
 	p = data;
 	printf("Seller sends the command: %s,ret:%d\n",data,ret);
 	for(;*p;++p) *p = tolower(*p);
 	pch = strtok(data, " ");
+        printf("pch: %s\n", pch);
 	if(strcmp(pch,"list")==0){
-	  ret = listItems();
-	  sendResponse(newsockfd, LIST, ret);
+	  ret = listItems(newsockfd);
+	  //sendResponse(newsockfd, LIST, ret);
         }
 	else if(strcmp(pch,"add")==0){
 	  pch = strtok(NULL, " ");
 	  item_number = atoi(pch);
+          printf("item num: %d\n", item_number);
 	  pch = strtok(NULL, " ");
+          printf("pch: %s\n", pch);
 	  ret = addItem(item_number, pch);
 	  sendResponse(newsockfd, ADD, ret);
 	}
