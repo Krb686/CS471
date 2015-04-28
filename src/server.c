@@ -158,7 +158,9 @@ void main() {
 		sizeof(struct timeval));
         while(1){
           ret = sem_trywait(&outbid);
+	  printf("DEBUG_ret:%d\n",ret);
           if(ret == 0){
+	    printf("DEBUG\n");
             ret=updateItemList(ITEM_OUTBID, NULL);
             if(ret != OUTBID) sem_post(&outbid);
             else{
@@ -319,7 +321,7 @@ int updateItemList(int flag, itemP newitem){
   itemP item = malloc(sizeof(itemR));
   itemListP previtem = NULL;
   itemListP head = itemlist;
-  if(flag == ITEM_BID) printf("DEBUG_inum:%d\n",newitem->item_number);
+  if(flag == ITEM_OUTBID) printf("DEBUG_ibdr:%s\n",itemlist->data->bidder);
 
   sem_wait(&mutex);
 //////////////////////////////////////////////////////////////////////////
@@ -331,10 +333,13 @@ int updateItemList(int flag, itemP newitem){
     }
     if(flag==ITEM_BID && item->item_number==newitem->item_number &&
 	item->bid < newitem->bid){
+      printf("DEBUG_oldbid:%d newbid:%d\n",item->bid,newitem->bid);
+      if(item->bid != 0){
+	sem_post(&outbid);
+	printf("outbid detected\n");
+      }
       item->bid = newitem->bid;
       strcpy(item->bidder,newitem->bidder);
-      sem_post(&outbid);
-      printf("outbid detected\n");
     }
     if(itemlist==NULL){
       itemlist = malloc(sizeof(itemListR));
@@ -367,12 +372,15 @@ int updateItemList(int flag, itemP newitem){
       continue;
     }
     else{
+      printf("DEBUG\n");
       if(flag==ITEM_OUTBID && strcmp(itemlist->data->bidder,name)==0
 	 && strcmp(itemlist->data->bidder,item->bidder)!=0){
+        printf("DEBUG\n");
 	sprintf(temp,"%s has outbid you on %s\n",
 		item->bidder,item->item_name);
+        printf("DEBUG_temp:%s\n",temp);
 	strcat(outbid_msg,temp);
-	printf("%s",temp);
+        printf("DEBUG_temp:%s\n",temp);
 	stat = OUTBID;
       }
       itemlist->data->bid = item->bid;
