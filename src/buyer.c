@@ -47,8 +47,15 @@ void main(){
   comm_addr.sin_addr.s_addr = inet_addr(AUCTIONSERVER_IP_ADDRESS);
   comm_addr.sin_port = htons(BUYER_PORT);
 
-  
+  //Send the connection request
+  ret = (int)connect(sockfd, (struct sockaddr *)&comm_addr, sizeof(comm_addr));  
 
+  if(ret < 0){
+    printf("%d_err:%s\n", ret, strerror(errno));
+    exit(0);
+  } else {
+    printf("Buyer connected successfully!\n");
+  }
   
   printf("Buyer initialized\n\n");
 
@@ -57,15 +64,6 @@ void main(){
 
     fgets(command, MAX_INPUT_SIZE, stdin);
 
-
-    //Send the connection request
-
-    if(ret < 0){
-      printf("%d_err:%s\n", ret, strerror(errno));
-      exit(0);
-    } else {
-      printf("Buyer connected successfully!\n");
-    }
 
     //Send the username data 
     bytesSent = send(sockfd, command, MAX_INPUT_SIZE, 0);
@@ -81,7 +79,7 @@ void main(){
     }
 
     printf("%s\n", response);
-    if(strcmp(response, "1") == 0){
+    if(strcmp(response, "0") == 0){
       login = 0;
     } else {
       printf("The server rejected the login request.  Please ensure the username is correct\n");
@@ -98,7 +96,7 @@ void main(){
     }
   } else {
     while(!logout){
-      printf("\t\t~~~~MENU~~~~\n1)  List\n2) Bid <Item Number> <Bid Amount>\n3) Logout\n~~~~~~~~~~~~~~~~\n");
+      printf("\t\t~~~~MENU~~~~\n1) List\n2) Bid <Item Number> <Bid Amount>\n3) Logout\n~~~~~~~~~~~~~~~~\n");
       printf(">>");
       scanf("%s", data);
       p = data;
