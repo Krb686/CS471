@@ -1,2 +1,1 @@
-void list();
 void bid();

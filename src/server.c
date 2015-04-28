@@ -87,10 +87,10 @@ void main() {
     }//login==1
     printf("exit login\n");
     while(1){
-      strcpy(data,"     ");
-      printf("DEBUG %s\n",data);
+      strcpy(data,"  ");
+      printf("DEBUG --%s--\n",data);
       ret = (int)recv(newsockfd, data, sizeof(data), 0);
-      printf("DEBUG %s,ret:%d\n",data,ret);
+      printf("DEBUG --%s--,ret:%d\n",data,ret);
       if(ret>0){
 	p = data;
 	printf("Seller sends the command: %s,ret:%d\n",data,ret);
@@ -147,7 +147,6 @@ void main() {
             printf("ret was < 0\n");
           }
         }
-        printf("skipped the login loop\n");
         while(1){
           ret = (int)recv(newsockfd, data, sizeof(data), 0);
           if(ret>0){
@@ -178,19 +177,15 @@ int clientLogin(char *name){
   int i = 0;
   int code = 0;
   while(i<6){
-    printf("\n\n");
     if(names[i]!=NULL){
       code = strcmp(names[i], name);
-      printf("\n%d\n", code);
       if(code == 0){
         names[i] = NULL;
-        printf("returning success\n");
         return LOGINSUCCESS;
       }
     }
     i++;
   }
-  printf("returning failure\n");
   return LOGINFAILED;
 }
 

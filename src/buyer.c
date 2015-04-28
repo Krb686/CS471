@@ -104,7 +104,8 @@ void main(){
       pch = strtok(data, " ");
 
       if(strcmp(pch, "list") == 0){
-        list(sockfd);  
+        printf("sending: %s\n", data);
+        ret = (int)send(sockfd, data, strlen(data)+1, 0);
       } else if(strcmp(pch, "bid") == 0){
         pch = strtok(NULL, " ");
         bidNum = atoi(pch);
@@ -122,11 +123,6 @@ void main(){
   }
 }
 
-
-void list(int sockfd){
-  char data[] = "list";
-  send(sockfd, data, strlen(data), 0);
-}
 
 void bid(int sockfd, char *p){
   send(sockfd, p, strlen(p), 0);

@@ -9,23 +9,31 @@
 #include<netinet/in.h>
 #include<time.h>
 #include "seller.h"
+#include<signal.h>
 
 #define MAX_INPUT_SIZE 40
 
 int SELLER_PORT = 5372;
 char AUCTIONSERVER_IP_ADDRESS[20] = "127.0.0.1";
+int sockfd;
 
 void main(){
-  int sockfd, ret, pid, login=1, logout=0, item_number;
+  int ret, pid, login=1, logout=0, item_number;
   struct sockaddr_in my_addr, comm_addr;
   char command[MAX_INPUT_SIZE];
   char response[32] = "";
   int bytesSent = 0;
+  struct sigaction sa;
 
   char data[MAX_INPUT_SIZE];
   char responseStr[32];
   char *pch, *p;
   struct timeval t;
+
+  sa.sa_handler = sig_handler;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+  sigaction(SIGINT, &sa, NULL);
 
   t.tv_usec = 100000;
 
@@ -83,7 +91,7 @@ void main(){
       for(;*p;++p) *p = tolower(*p);
       pch = strtok(data, " ");
       if(strcmp(pch,"list")==0){
-	ret = send(sockfd,pch,strlen(pch),0);
+	ret = send(sockfd,pch,strlen(pch)+1,0);
 	printf("sent:%s, ret:%d\n",pch,ret);
 //	list();
       }
@@ -122,6 +130,13 @@ void add(){
 void sell(){
 
 
+}
+
+void sig_handler(int signum){
+  printf("Caught CTRL + C\n");
+  printf("Closing the connection...\n");
+  close(sockfd);
+  exit(0);  
 }
 
 
