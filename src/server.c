@@ -155,6 +155,7 @@ void main() {
             for(;*p;++p) *p = tolower(*p);
             pch = strtok(data, " ");
             if(strcmp(pch,"list")==0){
+              printf("sending the items...\n");
               listItems(newsockfd);
               //sendResponse(newsockfd, LIST, ret);
             }
@@ -165,7 +166,10 @@ void main() {
               ret = bidOnItem(item_number, atoi(pch), name);
               sendResponse(newsockfd, BID, ret);
             }
-            else sendResponse(newsockfd, INVALID, 0);
+            else {
+              printf("going thru the else...\n");
+              sendResponse(newsockfd, INVALID, 0);
+            }
           }//ret>0
         }//True
       }//childn
@@ -190,6 +194,9 @@ int clientLogin(char *name){
 }
 
 int listItems(int sockfd){
+  char response[40] = "";
+  int ret = 0;
+
   updateItemList(ITEM_UPDATE,NULL);
   itemListP iter = itemlist;
   if(iter!=NULL){
@@ -201,8 +208,11 @@ int listItems(int sockfd){
     }
     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
     return SUCCESS;
+  } else {
+    sprintf(response, "No items in the item list!\n");
+    ret = (int)send(sockfd, response, strlen(response)+1, 0);
+    return FAIL;
   }
-  return FAIL;
 }
 
 int addItem(int item_number, char *pch){
