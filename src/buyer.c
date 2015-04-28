@@ -94,30 +94,19 @@ void main(){
       }
     }
   } else {
-    while(!logout){
       printf("\t\t~~~~MENU~~~~\n1) List\n2) Bid <Item Number> <Bid Amount>\n3) Logout\n~~~~~~~~~~~~~~~~\n");
+    while(!logout){
       printf(">>");
-      scanf("%s", data);
-      p = data;
+      strcpy(command, "");
+      fgets(command, MAX_INPUT_SIZE, stdin);
+
+      p = command;
       for(;*p;++p) *p = tolower(*p);
-      p = data;
-      pch = strtok(data, " ");
-
-      if(strcmp(pch, "list") == 0){
-        printf("sending: %s\n", data);
-        ret = (int)send(sockfd, data, strlen(data)+1, 0);
-      } else if(strcmp(pch, "bid") == 0){
-        pch = strtok(NULL, " ");
-        bidNum = atoi(pch);
-
-        pch = strtok(NULL, " ");
-        bidAmt = atoi(pch);       
- 
-        bid(sockfd, p);
-      } else if(strcmp(pch, "logout") == 0){
-        
-        logout = 1;
-      } 
+      pch = strtok(command, "\n");
+      printf("command was: %s\n", pch);
+      ret = send(sockfd,pch,strlen(pch)+1,0);
+      if(0) logout = 1;
+     
     }
 
   }

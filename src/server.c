@@ -103,10 +103,13 @@ void main() {
 	  pch = strtok(NULL, " ");
 	  item_number = atoi(pch);
           printf("item num: %d\n", item_number);
-	  pch = strtok(NULL, " ");
-          printf("pch: %s\n", pch);
-	  ret = addItem(item_number, pch);
-	  sendResponse(newsockfd, ADD, ret);
+          if(item_number>0){
+	    pch = strtok(NULL, " ");
+            printf("pch: %s\n", pch);
+	    ret = addItem(item_number, pch);
+	    sendResponse(newsockfd, ADD, ret);
+	  }
+	  else sendResponse(newsockfd, INVALID, 1);
 	}
 	else if(strcmp(pch,"sell")==0){
 	  pch = strtok(NULL, " ");
@@ -116,7 +119,7 @@ void main() {
         }
 	else sendResponse(newsockfd, INVALID, 0);
       }//ret>0
-      else printf("%d_err:%s",ret,strerror(errno));
+      //else printf("%d_err:%s",ret,strerror(errno));
     }//True
   }//end child
   else{//parent
@@ -126,7 +129,7 @@ void main() {
     while(1){
       newsockfd = accept(buysockfd, (struct sockaddr *)&comm_addr,
                   (socklen_t *)&clilen);
-      if((pid = fork()) != 0){
+      if((pid = fork()) == 0){
         close(newsockfd);
       }
       else{
@@ -195,20 +198,25 @@ int clientLogin(char *name){
 }
 
 int listItems(int sockfd){
-  char response[40] = "";
+  char response[512] = "\t~~~~ITEMS~~~~\n";
+  char line[50] = "";
   int ret = 0;
-
   updateItemList(ITEM_UPDATE,NULL);
   itemListP iter = itemlist;
   if(iter!=NULL){
-    printf("\t\t~~~~ITEMS~~~~\n");
     while(iter!=NULL){
-      printf("%d) %s %d %s\n",iter->data->item_number,
+      printf("data_%p\n",iter->data);
+      sprintf(line,"%d) %s %d %s\n",iter->data->item_number,
 	     iter->data->item_name,iter->data->bid,iter->data->bidder);
+      printf("line:%s\n",line);
+      strcat(response,line);
+      printf("resp:%s\n",response);
       iter = iter->next;
     }
-    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
-    return SUCCESS;
+    ret = (int)send(sockfd, response, strlen(response)+1, 0);
+    printf("done:%s_ret:%d\n",response,ret);
+    if(ret>0) return SUCCESS;
+    else printf("DEBUG4_ret:%d\n",ret);
   } else {
     sprintf(response, "No items in the item list!\n");
     ret = (int)send(sockfd, response, strlen(response)+1, 0);
@@ -282,12 +290,13 @@ int updateItemList(int flag, itemP newitem){
   int ret;
   int stat = 0;
   itemP item = malloc(sizeof(itemR));
+  printf("DEBUG_item1%p\n",item);
   itemListP previtem = NULL;
   itemListP head = itemlist;
 
   sem_wait(&mutex);
 //////////////////////////////////////////////////////////////////////////
-  ret = (int)read(channel[0], &item, sizeof(itemR));
+  ret = (int)read(channel[0], item, sizeof(itemR));
   while(ret>0){
     if(flag!=ITEM_UPDATE && item->id==newitem->id) stat = ITEM_EXISTS;
     if(flag==ITEM_ADD && item->item_number==newitem->item_number){
@@ -320,13 +329,14 @@ int updateItemList(int flag, itemP newitem){
       if(previtem!=NULL) previtem->next = itemlist->prev;
       if(itemlist==head) head = itemlist->prev;
       previtem = itemlist->prev;
-      ret = (int)read(channel[0], &item, sizeof(itemR));
+      ret = (int)read(channel[0], item, sizeof(itemR));
       continue;
     }
+    else free(item);
     previtem = itemlist;
     itemlist = itemlist->next;
     item = malloc(sizeof(itemR));
-    ret = (int)read(channel[0], &item, sizeof(itemR));
+    ret = (int)read(channel[0], item, sizeof(itemR));
   }//while(ret>0)
   free(item);
 
@@ -367,7 +377,8 @@ int updateItemList(int flag, itemP newitem){
   itemlist = head;
   while(itemlist!=NULL){
     item = itemlist->data;
-    write(channel[1], &item, sizeof(itemR));
+    printf("DEBUG_item%p\n",item);
+    write(channel[1], item, sizeof(itemR));
     itemlist = itemlist->next;
   }
 //////////////////////////////////////////////////////////////////////////

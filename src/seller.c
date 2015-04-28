@@ -25,7 +25,7 @@ void main(){
   int bytesSent = 0;
   struct sigaction sa;
 
-  char data[MAX_INPUT_SIZE];
+  char data[512];
   char responseStr[32];
   char *pch, *p;
   struct timeval t;
@@ -75,10 +75,12 @@ void main(){
     }
   }
   if((pid = fork()) != 0){
+    
     while(1){
       ret = (int)recv(sockfd, data, sizeof(data), 0);
       if(ret>0){
-        printf("<%s>\n",data);
+        printf("\n<%s>\n>>",data);
+	fflush(stdout);
       }
     }
   }
@@ -91,19 +93,15 @@ void main(){
 
       p = command;
       for(;*p;++p) *p = tolower(*p);
-      pch = strtok(command, " ");
+      pch = strtok(command, "\n");
       printf("command was: %s\n", pch);
-      if(strcmp(pch,"list")==0){
-	ret = send(sockfd,pch,strlen(pch)+1,0);
+      ret = send(sockfd,pch,strlen(pch)+1,0);
+/*      if(strcmp(pch,"list")==0){
 	printf("sent:%s, ret:%d\n",pch,ret);
 //	list();
       }
       else if(strcmp(pch,"add")==0){
-	pch = strtok(NULL, " ");
-	item_number = atoi(pch);
        
-        pch = strtok(NULL, ""); 
-	add(item_number,pch);
       }
       else if(strcmp(pch,"sell")==0){
 	pch = strtok(NULL, " ");
@@ -114,6 +112,7 @@ void main(){
         printf("ERR!\nInvalid command!");
         printf("\t\t~~~~MENU~~~~\n1) List\n2) Add <Item Number> <Item Name>\n3) Sell <Item Number>\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
       }
+*/
     }
   }
 }
