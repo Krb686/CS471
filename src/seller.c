@@ -66,7 +66,6 @@ void main(){
       printf("%d_err:%s\n", ret, strerror(errno));
       exit(0);
     }
-    printf("%s\n",response);
     if(strcmp(response, "0")==0){
       login = 0;
     }
@@ -94,7 +93,6 @@ void main(){
       p = command;
       for(;*p;++p) *p = tolower(*p);
       pch = strtok(command, "\n");
-      printf("command was: %s\n", pch);
       ret = send(sockfd,pch,strlen(pch)+1,0);
 /*      if(strcmp(pch,"list")==0){
 	printf("sent:%s, ret:%d\n",pch,ret);

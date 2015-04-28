@@ -77,7 +77,6 @@ void main(){
       exit(0);
     }
 
-    printf("<%s>,ret:%d\n", response, ret);
     if(strcmp(response, "0") == 0){
       login = 0;
     } else {
@@ -103,7 +102,6 @@ void main(){
       p = command;
       for(;*p;++p) *p = tolower(*p);
       pch = strtok(command, "\n");
-      printf("command was: %s\n", pch);
       ret = send(sockfd,pch,strlen(pch)+1,0);
       if(0) logout = 1;
      
