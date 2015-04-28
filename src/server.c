@@ -36,7 +36,8 @@ void main() {
   struct timeval t;
   t.tv_usec = 10000;
   char data[MAX_INPUT_SIZE]="";
-  char *pch, *p, j, *name;
+  char *pch, *p, j;
+  char name[9] = "";
   struct sigaction sa;
 
 
@@ -143,8 +144,10 @@ void main() {
             printf("%s\n", pch);
             if(strcmp(pch,"login")==0){
               pch = strtok(NULL, " \n");
-              name = pch;
+              strcpy(name, pch);
+              printf("here\n");
               login=clientLogin(pch);//returns 0 on success
+              printf("login val: %d\n", login);
               sendResponse(newsockfd, BUYER_LOGIN, login);
             }
           } else {
