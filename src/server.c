@@ -167,9 +167,12 @@ void main() {
               //sendResponse(newsockfd, LIST, ret);
             }
             else if(strcmp(pch,"bid")==0){
+	      printf("DEBUG_cmd:%s\n",pch);
               pch = strtok(NULL, " ");
+	      printf("DEBUG_inum:%s\n",pch);
               item_number = atoi(pch);
               pch = strtok(NULL, " ");
+	      printf("DEBUG_ibid:%s\n",pch);
               ret = bidOnItem(item_number, atoi(pch), name);
               sendResponse(newsockfd, BID, ret);
             }
@@ -254,13 +257,16 @@ int sellItem(int item_number){
 int bidOnItem(int item_number, int bid_amount, char *name){
   itemListP iter = itemlist;
   while(iter!=NULL){
+    printf("inum:%d\n",iter->data->item_number);
     if(iter->data->item_number == item_number){
+      printf("ibid:%d\n",iter->data->bid);
       if(iter->data->bid < bid_amount){
 	strcpy(iter->data->bidder,name);
 	iter->data->bid = bid_amount;
 	return updateItemList(ITEM_BID, iter);
       }//bid_amnt < data->bid
     }//item_number != data->item_number
+    iter = iter->next;
   }//iter == NULL
   return FAIL;
 }

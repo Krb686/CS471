@@ -10,7 +10,7 @@
 #include <time.h>
 #include "buyer.h"
 
-#define MAX_INPUT_SIZE 40
+#define MAX_INPUT_SIZE 512
 
 
 int BUYER_PORT = 5373;
