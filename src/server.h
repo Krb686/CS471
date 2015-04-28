@@ -9,11 +9,14 @@
 #define LOGINSUCCESS	0
 #define LOGINFAILED	1
 
-#define ITEM_EXISTS	1
 #define ITEM_UPDATE	0
 #define ITEM_ADD	1
 #define ITEM_DEL	2
 #define ITEM_BID	3
+#define ITEM_OUTBID	4
+
+#define EXISTS		1
+#define OUTBID		2
 
 #define SUCCESS		0
 #define FAIL		-1

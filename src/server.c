@@ -1,8 +1,4 @@
 #include<errno.h>
-//#include<unistd.h>
-//#include<sys/types.h>
-//#include<sys/wait.h>
-//#include<strings.h>
 #include<semaphore.h>
 #include<stdlib.h>
 #include<string.h>
@@ -23,9 +19,12 @@ int BUYER_PORT  = 5373;
 int backlog = 10;
 int item_count = 0;
 int channel[2];
+char outbid_msg[512] = "";
+char name[9] = "";
 char *names[6] = {"alice","bob","dave","pam","susan","tom"};
 itemListP itemlist;
 sem_t mutex;
+sem_t outbid;
 int selsockfd, buysockfd, newsockfd;
 
 
@@ -37,7 +36,6 @@ void main() {
   t.tv_usec = 10000;
   char data[MAX_INPUT_SIZE]="";
   char *pch, *p, j;
-  char name[9] = "";
   struct sigaction sa;
 
 
@@ -47,6 +45,7 @@ void main() {
   sigaction(SIGINT, &sa, NULL);
 
   sem_init(&mutex, 1, 1);
+  sem_init(&outbid, 1, 0);
   ret = pipe2(channel, O_NONBLOCK);
   if(ret<0) printf("DEBUG pipe->%d_%s",ret,strerror(errno));
 
@@ -128,6 +127,7 @@ void main() {
     // ===============================================================
     // BUYER code
     while(1){
+      //make nonblocking
       newsockfd = accept(buysockfd, (struct sockaddr *)&comm_addr,
                   (socklen_t *)&clilen);
       if((pid = fork()) == 0){
@@ -154,7 +154,19 @@ void main() {
             printf("ret was < 0\n");
           }
         }
+	setsockopt(newsockfd, SOL_SOCKET, SO_RCVTIMEO,&t,
+		sizeof(struct timeval));
         while(1){
+          ret = sem_trywait(&outbid);
+          if(ret == 0){
+            ret=updateItemList(ITEM_OUTBID, NULL);
+            if(ret != OUTBID) sem_post(&outbid);
+            else{
+	      ret = (int)send(newsockfd, outbid_msg,strlen(outbid_msg),0);
+	      printf("outbidmsg:%s ret: %d\n",outbid_msg, ret);
+	      strcpy(outbid_msg,"");
+            }
+          }
           ret = (int)recv(newsockfd, data, sizeof(data), 0);
           if(ret>0){
             p = data;
@@ -170,7 +182,7 @@ void main() {
               pch = strtok(NULL, " ");
               item_number = atoi(pch);
               pch = strtok(NULL, " ");
-              ret = bidOnItem(item_number, atoi(pch), name);
+              ret = bidOnItem(item_number, atoi(pch));
               sendResponse(newsockfd, BID, ret);
             }
             else {
@@ -184,7 +196,7 @@ void main() {
   }//end parent
 }//main
 
-int clientLogin(char *name){
+int clientLogin(){
   int i = 0;
   int code = 0;
   while(i<6){
@@ -247,7 +259,7 @@ int sellItem(int item_number){
   return FAIL;
 }
 
-int bidOnItem(int item_number, int bid_amount, char *name){
+int bidOnItem(int item_number, int bid_amount){
   int ret;
   itemP item = malloc(sizeof(itemR));
   item->item_number = item_number;
@@ -303,6 +315,7 @@ int sendResponse(int newsockfd, int from, int code){
 int updateItemList(int flag, itemP newitem){
   int ret;
   int stat = 0;
+  char temp[64] = "";
   itemP item = malloc(sizeof(itemR));
   itemListP previtem = NULL;
   itemListP head = itemlist;
@@ -312,14 +325,16 @@ int updateItemList(int flag, itemP newitem){
 //////////////////////////////////////////////////////////////////////////
   ret = (int)read(channel[0], item, sizeof(itemR));
   while(ret>0){
-    if(flag!=ITEM_UPDATE && item->id==newitem->id) stat = ITEM_EXISTS;
+    if(flag!=ITEM_UPDATE && item->id==newitem->id) stat = EXISTS;
     if(flag==ITEM_ADD && item->item_number==newitem->item_number){
-      stat = ITEM_EXISTS;
+      stat = EXISTS;
     }
     if(flag==ITEM_BID && item->item_number==newitem->item_number &&
 	item->bid < newitem->bid){
       item->bid = newitem->bid;
       strcpy(item->bidder,newitem->bidder);
+      sem_post(&outbid);
+      printf("outbid detected\n");
     }
     if(itemlist==NULL){
       itemlist = malloc(sizeof(itemListR));
@@ -352,6 +367,14 @@ int updateItemList(int flag, itemP newitem){
       continue;
     }
     else{
+      if(flag==ITEM_OUTBID && strcmp(itemlist->data->bidder,name)==0
+	 && strcmp(itemlist->data->bidder,item->bidder)!=0){
+	sprintf(temp,"%s has outbid you on %s\n",
+		item->bidder,item->item_name);
+	strcat(outbid_msg,temp);
+	printf("%s",temp);
+	stat = OUTBID;
+      }
       itemlist->data->bid = item->bid;
       strcpy(itemlist->data->bidder,item->bidder);
       free(item);
@@ -374,7 +397,7 @@ int updateItemList(int flag, itemP newitem){
   }
 
   ret = SUCCESS;
-  if(flag == ITEM_ADD && stat != ITEM_EXISTS){
+  if(flag == ITEM_ADD && stat != EXISTS){
     itemlist = malloc(sizeof(itemListR));
     itemlist->next = NULL;
     itemlist->prev = previtem;
@@ -382,8 +405,8 @@ int updateItemList(int flag, itemP newitem){
     if(head == NULL) head = itemlist;
     itemlist->data = newitem;
   }
-  else if(flag == ITEM_ADD) ret = ITEM_EXISTS;
-  else if(flag == ITEM_DEL && stat == ITEM_EXISTS){
+  else if(flag == ITEM_ADD) ret = EXISTS;
+  else if(flag == ITEM_DEL && stat == EXISTS){
     itemListP iter = head;
     while(iter->data->id!=newitem->id){
       if(iter==NULL){printf("DEBUG3\n"); exit(0);}//shouldn't happen
@@ -396,6 +419,7 @@ int updateItemList(int flag, itemP newitem){
     free(iter);
   }
   else if(flag == ITEM_DEL) ret = FAIL;
+  else if(stat == OUTBID) ret = OUTBID;
 
   itemlist = head;
   while(itemlist!=NULL){
