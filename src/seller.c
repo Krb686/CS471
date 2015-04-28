@@ -101,8 +101,8 @@ void main(){
       else if(strcmp(pch,"add")==0){
 	pch = strtok(NULL, " ");
 	item_number = atoi(pch);
-        
-	pch = strtok(NULL, " ");
+       
+        pch = strtok(NULL, ""); 
 	add(item_number,pch);
       }
       else if(strcmp(pch,"sell")==0){
