@@ -59,7 +59,7 @@ void main(){
       exit(0);
     }
     printf("%s\n",response);
-    if(strcmp(response, "1")==0){
+    if(strcmp(response, "0")==0){
       login = 0;
     }
     else{
