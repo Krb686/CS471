@@ -23,7 +23,7 @@ int BUYER_PORT  = 5373;
 int backlog = 10;
 int item_count = 0;
 int channel[2];
-char *names[6] = {"alice\n","bob\n","dave\n","pam\n","susan\n","tom\n"};
+char *names[6] = {"alice","bob","dave","pam","susan","tom"};
 itemListP itemlist;
 sem_t mutex;
 int selsockfd, buysockfd, newsockfd;
@@ -35,7 +35,7 @@ void main() {
   struct sockaddr_in sel_addr, buy_addr, comm_addr;
   struct timeval t;
   t.tv_usec = 10000;
-  char data[MAX_INPUT_SIZE];
+  char data[MAX_INPUT_SIZE]="";
   char *pch, *p, j, *name;
   struct sigaction sa;
 
@@ -75,21 +75,25 @@ void main() {
       ret = (int)recv(newsockfd, data, sizeof(data), 0);
       if(ret>0){
 	p = data;
-	printf("Seller sends the command: %s",data);
+	printf("Seller sends the command: %s\n",data);
 	for(;*p;++p) *p = tolower(*p);
 	pch = strtok(data, " ");
 	if(strcmp(pch,"login")==0){
-	  pch = strtok(NULL, " ");
-	  if(strcmp(pch,"seller\n")==0) login = 0;
+	  pch = strtok(NULL, " \n");
+	  if(strcmp(pch,"seller")==0) login = 0;
 	  sendResponse(newsockfd, SELLER_LOGIN, login);
 	}//pch==login
       }//ret>0
     }//login==1
+    printf("exit login\n");
     while(1){
-      ret = (int)recv(newsockfd, data, sizeof(char)*MAX_INPUT_SIZE, 0);
+      strcpy(data,"     ");
+      printf("DEBUG %s\n",data);
+      ret = (int)recv(newsockfd, data, sizeof(data), 0);
+      printf("DEBUG %s,ret:%d\n",data,ret);
       if(ret>0){
 	p = data;
-	printf("Seller sends the command: %s",data);
+	printf("Seller sends the command: %s,ret:%d\n",data,ret);
 	for(;*p;++p) *p = tolower(*p);
 	pch = strtok(data, " ");
 	if(strcmp(pch,"list")==0){
@@ -111,6 +115,7 @@ void main() {
         }
 	else sendResponse(newsockfd, INVALID, 0);
       }//ret>0
+      else printf("%d_err:%s",ret,strerror(errno));
     }//True
   }//end child
   else{//parent
@@ -125,7 +130,7 @@ void main() {
       }
       else{
         while(login){
-          ret = (int)recv(newsockfd, data, sizeof(char)*MAX_INPUT_SIZE, 0);
+          ret = (int)recv(newsockfd, data, sizeof(data), 0);
           if(ret>0){
             p = data;
             printf("Buyer sends the command: %s",data);
@@ -133,10 +138,10 @@ void main() {
             pch = strtok(data, " ");
             printf("%s\n", pch);
             if(strcmp(pch,"login")==0){
-              pch = strtok(NULL, " ");
+              pch = strtok(NULL, " \n");
+              name = pch;
               login=clientLogin(pch);//returns 0 on success
               sendResponse(newsockfd, BUYER_LOGIN, login);
-              name = pch;
             }
           } else {
             printf("ret was < 0\n");
@@ -144,10 +149,10 @@ void main() {
         }
         printf("skipped the login loop\n");
         while(1){
-          ret = (int)recv(newsockfd, data, sizeof(char)*MAX_INPUT_SIZE, 0);
+          ret = (int)recv(newsockfd, data, sizeof(data), 0);
           if(ret>0){
             p = data;
-            printf("%s sends the command: %s",name,data);
+            printf("%s sends the command: %s,ret:%d\n",name,data,ret);
             for(;*p;++p) *p = tolower(*p);
             pch = strtok(data, " ");
             if(strcmp(pch,"list")==0){
@@ -192,14 +197,17 @@ int clientLogin(char *name){
 int listItems(int sockfd){
   updateItemList(ITEM_UPDATE,NULL);
   itemListP iter = itemlist;
-  if(iter!=NULL) printf("\t\t~~~~ITEMS~~~~\n");
-  while(iter!=NULL){
-    printf("%d) %s %d %s\n",iter->data->item_number,iter->data->item_name,
-			    iter->data->bid,iter->data->bidder);
-    iter = iter->next;
+  if(iter!=NULL){
+    printf("\t\t~~~~ITEMS~~~~\n");
+    while(iter!=NULL){
+      printf("%d) %s %d %s\n",iter->data->item_number,
+	     iter->data->item_name,iter->data->bid,iter->data->bidder);
+      iter = iter->next;
+    }
+    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+    return SUCCESS;
   }
-  printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
-  return 0;
+  return FAIL;
 }
 
 int addItem(int item_number, char *pch){
@@ -253,11 +261,11 @@ int sendResponse(int newsockfd, int from, int code){
   sprintf(responseStr, "%d", code);  
 
   if(from == BUYER_LOGIN){
-    ret = (int)send(newsockfd, responseStr, sizeof(char)*MAX_INPUT_SIZE, 0);
-    printf("response ret: %d\n", ret);
+    ret = (int)send(newsockfd, responseStr, strlen(responseStr), 0);
+    printf("response:%s ret: %d\n",responseStr, ret);
   }
   else if(from == SELLER_LOGIN){
-    ret = (int)send(newsockfd, responseStr, sizeof(char)*MAX_INPUT_SIZE, 0);
+    ret = (int)send(newsockfd, responseStr, strlen(responseStr), 0);
     printf("response ret: %d\n", ret);
   }
 

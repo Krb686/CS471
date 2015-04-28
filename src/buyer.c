@@ -21,7 +21,7 @@ void main(){
   struct sockaddr_in my_addr, comm_addr;
   char username[16];
   char command[MAX_INPUT_SIZE];
-  char response[32];
+  char response[32] = "";
   int bytesSent = 0;
 
   char data[MAX_INPUT_SIZE];
@@ -66,19 +66,18 @@ void main(){
 
 
     //Send the username data 
-    bytesSent = send(sockfd, command, MAX_INPUT_SIZE, 0);
+    bytesSent = send(sockfd, command, strlen(command), 0);
 
     //printf("Sent %d bytes\n", bytesSent);
     
     //Wait for the response
-    ret = (int)recv(sockfd, response, sizeof(char)*MAX_INPUT_SIZE, 0);
-
+    ret = (int)recv(sockfd, response, sizeof(response), 0);
     if(ret < 0) {
       printf("%d_err:%s\n", ret, strerror(errno));
       exit(0);
     }
 
-    printf("%s\n", response);
+    printf("<%s>,ret:%d\n", response, ret);
     if(strcmp(response, "0") == 0){
       login = 0;
     } else {
@@ -89,9 +88,9 @@ void main(){
   //Loop and print output responses from the server
   if((pid = fork()) != 0){
     while(1){
-      ret = (int)recv(sockfd, data, sizeof(char)*MAX_INPUT_SIZE, 0);
+      ret = (int)recv(sockfd, data, sizeof(data), 0);
       if(ret > 0){
-        printf("<%s>\n", data);
+        printf("<%s>,ret:%d\n", data,ret);
       }
     }
   } else {
@@ -126,9 +125,9 @@ void main(){
 
 void list(int sockfd){
   char data[] = "list";
-  send(sockfd, data, sizeof(data), 0);
+  send(sockfd, data, strlen(data), 0);
 }
 
 void bid(int sockfd, char *p){
-  send(sockfd, p, sizeof(p), 0);
+  send(sockfd, p, strlen(p), 0);
 }

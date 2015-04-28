@@ -19,7 +19,7 @@ void main(){
   int sockfd, ret, pid, login=1, logout=0, item_number;
   struct sockaddr_in my_addr, comm_addr;
   char command[MAX_INPUT_SIZE];
-  char response[32];
+  char response[32] = "";
   int bytesSent = 0;
 
   char data[MAX_INPUT_SIZE];
@@ -52,8 +52,8 @@ void main(){
   while(login){
     printf("Please enter 'login <username>'\n>>");
     fgets(command, MAX_INPUT_SIZE, stdin);
-    bytesSent = send(sockfd, command, sizeof(char)*MAX_INPUT_SIZE, 0);
-    ret = (int)recv(sockfd, response, sizeof(char)*MAX_INPUT_SIZE, 0);
+    bytesSent = send(sockfd, command, strlen(command), 0);
+    ret = (int)recv(sockfd, response, sizeof(response), 0);
     if(ret < 0){
       printf("%d_err:%s\n", ret, strerror(errno));
       exit(0);
@@ -83,7 +83,9 @@ void main(){
       for(;*p;++p) *p = tolower(*p);
       pch = strtok(data, " ");
       if(strcmp(pch,"list")==0){
-	list();
+	ret = send(sockfd,pch,strlen(pch),0);
+	printf("sent:%s, ret:%d\n",pch,ret);
+//	list();
       }
       else if(strcmp(pch,"add")==0){
 	pch = strtok(NULL, " ");
