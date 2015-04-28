@@ -244,9 +244,14 @@ int invalidCommand(){
   return 0;
 }
 
-int sendResponse(int newsockfd, int CODE, int ret){
-  printf("%d\n", CODE);
-  printf("%d\n", ret);
+int sendResponse(int newsockfd, int from, int code){
+
+  int ret = 0;
+
+  if(from == BUYER_LOGIN){
+    ret = (int)send(newsockfd, &code, sizeof(char)*MAX_INPUT_SIZE, 0);
+  }
+
   return 0;
 }
 
