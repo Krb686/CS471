@@ -167,12 +167,9 @@ void main() {
               //sendResponse(newsockfd, LIST, ret);
             }
             else if(strcmp(pch,"bid")==0){
-	      printf("DEBUG_cmd:%s\n",pch);
               pch = strtok(NULL, " ");
-	      printf("DEBUG_inum:%s\n",pch);
               item_number = atoi(pch);
               pch = strtok(NULL, " ");
-	      printf("DEBUG_ibid:%s\n",pch);
               ret = bidOnItem(item_number, atoi(pch), name);
               sendResponse(newsockfd, BID, ret);
             }
@@ -211,16 +208,12 @@ int listItems(int sockfd){
   itemListP iter = itemlist;
   if(iter!=NULL){
     while(iter!=NULL){
-      printf("data_%p\n",iter->data);
       sprintf(line,"%d) %s %d %s\n",iter->data->item_number,
 	     iter->data->item_name,iter->data->bid,iter->data->bidder);
-      printf("line:%s\n",line);
       strcat(response,line);
-      printf("resp:%s\n",response);
       iter = iter->next;
     }
     ret = (int)send(sockfd, response, strlen(response)+1, 0);
-    printf("done:%s_ret:%d\n",response,ret);
     if(ret>0) return SUCCESS;
     else printf("DEBUG4_ret:%d\n",ret);
   } else {
@@ -255,7 +248,18 @@ int sellItem(int item_number){
 }
 
 int bidOnItem(int item_number, int bid_amount, char *name){
+  int ret;
+  itemP item = malloc(sizeof(itemR));
+  item->item_number = item_number;
+  item->bid = bid_amount;
+  strcpy(item->bidder,name);
+  ret = updateItemList(ITEM_BID, item);
+  free(item);
+  return ret;
+/*
+  updateItemList(ITEM_UPDATE, NULL);
   itemListP iter = itemlist;
+  printf("DEBUG_iter:%p\n",iter);
   while(iter!=NULL){
     printf("inum:%d\n",iter->data->item_number);
     if(iter->data->item_number == item_number){
@@ -269,6 +273,7 @@ int bidOnItem(int item_number, int bid_amount, char *name){
     iter = iter->next;
   }//iter == NULL
   return FAIL;
+*/
 }
 
 int invalidCommand(){
@@ -299,9 +304,9 @@ int updateItemList(int flag, itemP newitem){
   int ret;
   int stat = 0;
   itemP item = malloc(sizeof(itemR));
-  printf("DEBUG_item1%p\n",item);
   itemListP previtem = NULL;
   itemListP head = itemlist;
+  if(flag == ITEM_BID) printf("DEBUG_inum:%d\n",newitem->item_number);
 
   sem_wait(&mutex);
 //////////////////////////////////////////////////////////////////////////
@@ -310,6 +315,11 @@ int updateItemList(int flag, itemP newitem){
     if(flag!=ITEM_UPDATE && item->id==newitem->id) stat = ITEM_EXISTS;
     if(flag==ITEM_ADD && item->item_number==newitem->item_number){
       stat = ITEM_EXISTS;
+    }
+    if(flag==ITEM_BID && item->item_number==newitem->item_number &&
+	item->bid < newitem->bid){
+      item->bid = newitem->bid;
+      strcpy(item->bidder,newitem->bidder);
     }
     if(itemlist==NULL){
       itemlist = malloc(sizeof(itemListR));
@@ -342,10 +352,8 @@ int updateItemList(int flag, itemP newitem){
       continue;
     }
     else{
-      if(flag!=ITEM_BID){
-	itemlist->data->bid = item->bid;
-	strcpy(itemlist->data->bidder,item->bidder);
-      }
+      itemlist->data->bid = item->bid;
+      strcpy(itemlist->data->bidder,item->bidder);
       free(item);
     }
     previtem = itemlist;
@@ -392,7 +400,6 @@ int updateItemList(int flag, itemP newitem){
   itemlist = head;
   while(itemlist!=NULL){
     item = itemlist->data;
-    printf("DEBUG_item%p\n",item);
     write(channel[1], item, sizeof(itemR));
     itemlist = itemlist->next;
   }
