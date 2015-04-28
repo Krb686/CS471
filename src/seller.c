@@ -42,24 +42,16 @@ void main(){
   comm_addr.sin_addr.s_addr = inet_addr(AUCTIONSERVER_IP_ADDRESS);
   comm_addr.sin_port = htons(SELLER_PORT);
 
-/*  ret = (int)connect(sockfd, (struct sockaddr *)&comm_addr,
+  ret = (int)connect(sockfd, (struct sockaddr *)&comm_addr,
         sizeof(comm_addr));
   if(ret < 0){
     printf("%d_err:%s\n",ret,strerror(errno));
     exit(0);
-  }*/
+  }
   printf("Seller Initialized\n\n");
   while(login){
     printf("Please enter 'login <username>'\n>>");
     fgets(command, MAX_INPUT_SIZE, stdin);
-    ret = (int)connect(sockfd, (struct sockaddr *)&comm_addr, sizeof(comm_addr));
-    if(ret < 0){
-      printf("%d_err:%s\n",ret,strerror(errno));
-      exit(0);
-    }
-    else{
-      printf("Seller connected successfully!\n");
-    }
     bytesSent = send(sockfd, command, sizeof(char)*MAX_INPUT_SIZE, 0);
     ret = (int)recv(sockfd, response, sizeof(char)*MAX_INPUT_SIZE, 0);
     if(ret < 0){

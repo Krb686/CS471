@@ -59,7 +59,6 @@ void main(){
 
 
     //Send the connection request
-    ret = (int)connect(sockfd, (struct sockaddr *)&comm_addr, sizeof(comm_addr));
 
     if(ret < 0){
       printf("%d_err:%s\n", ret, strerror(errno));
