@@ -255,10 +255,10 @@ int bidOnItem(int item_number, int bid_amount, char *name){
       if(iter->data->bid < bid_amount){
 	strcpy(iter->data->bidder,name);
 	iter->data->bid = bid_amount;
-      }
-      return updateItemList(ITEM_UPDATE, NULL);
-    }
-  }
+	return updateItemList(ITEM_BID, iter);
+      }//bid_amnt < data->bid
+    }//item_number != data->item_number
+  }//iter == NULL
   return FAIL;
 }
 
@@ -332,7 +332,13 @@ int updateItemList(int flag, itemP newitem){
       ret = (int)read(channel[0], item, sizeof(itemR));
       continue;
     }
-    else free(item);
+    else{
+      if(flag!=ITEM_BID){
+	itemlist->data->bid = item->bid;
+	strcpy(itemlist->data->bidder,item->bidder);
+      }
+      free(item);
+    }
     previtem = itemlist;
     itemlist = itemlist->next;
     item = malloc(sizeof(itemR));

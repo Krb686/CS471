@@ -13,6 +13,7 @@
 #define ITEM_UPDATE	0
 #define ITEM_ADD	1
 #define ITEM_DEL	2
+#define ITEM_BID	3
 
 #define SUCCESS		0
 #define FAIL		-1
