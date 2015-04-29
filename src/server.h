@@ -21,6 +21,8 @@
 #define SUCCESS		0
 #define FAIL		-1
 
+#define SELL_NO_BID	1
+
 #define BIT0		1
 #define BIT1		2
 #define BIT2		4

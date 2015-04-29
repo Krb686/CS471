@@ -274,7 +274,11 @@ int sellItem(int item_number){
   itemListP iter = itemlist;
   while(iter!=NULL){
     if(iter->data->item_number == item_number){
-      return updateItemList(ITEM_DEL, iter->data);
+      if(iter->data->bid != 0){
+        return updateItemList(ITEM_DEL, iter->data);
+      } else {
+        return SELL_NO_BID;
+      }
     }
     iter = iter->next;
   }
@@ -318,18 +322,34 @@ int sendResponse(int newsockfd, int from, int code){
 
   int ret = 0;
 
-  char responseStr[MAX_INPUT_SIZE];
+  char responseStr[MAX_INPUT_SIZE] = "";
 
-  sprintf(responseStr, "%d", code);  
 
   if(from == BUYER_LOGIN){
-    ret = (int)send(newsockfd, responseStr, strlen(responseStr), 0);
+    sprintf(responseStr, "%d", code);  
     printf("response:%s ret: %d\n",responseStr, ret);
-  }
-  else if(from == SELLER_LOGIN){
-    ret = (int)send(newsockfd, responseStr, strlen(responseStr), 0);
+  } else if(from == SELLER_LOGIN){
+    sprintf(responseStr, "%d", code);
     printf("response ret: %d\n", ret);
+  } else if(from == SELL){
+    if(code == SELL_NO_BID){
+      sprintf(responseStr, "Cannot sell an item with no bids!\n");
+      strcat(responseStr, "\0");
+    }
+  } else if(from == BID){
+    sprintf(responseStr, "Your bid has been entered\n");
+    strcat(responseStr, "\0");
+  } else if(from == ADD){
+    if(code == 0){
+      sprintf(responseStr, "Item added to the list\n");
+      strcat(responseStr, "\0");
+    } else {
+      sprintf(responseStr, "Item could not be added\n");
+      strcat(responseStr, "\0");
+    }
   }
+
+  ret = (int)send(newsockfd, responseStr, strlen(responseStr), 0);
 
   return 0;
 }
