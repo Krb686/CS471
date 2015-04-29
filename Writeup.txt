@@ -2,56 +2,60 @@ CS471
 Luiz Cruz
 Kevin Briggs
 
-Project 1
+Project 3
 
 High level design
-  The design of this program uses 3 three queues, as per the specification.
-  The first and second queues are both round robin, while the third queue is 
-    an SRTF, or shortest remaing time first queue.
+  The design of this program uses socket connections in order to send information
+  from clients to a server and vice versa. The server forks a new child for every
+  incoming connection. Each of these children receives and messages to its
+  corresponding client. The server is an actution server, with one client and up
+  to 6 buyers connected. The seller can put items up for sale and the buyers can
+  bid on those items.
 
-  There are multiple structs used in this program to represent various components.
+  ==== Pipes ====
 
-  ==== Processes ====
+  We used pipes for inter-process communication. These set up a buffer of shared
+  memory between different forked processes. All forked processes have two file
+  descriptors that point to the read and write end of the pipe, by writing to
+  and reading from the pipes we were able to share information with different
+  forked processes. We used pipes in order to share the items that were up for
+  aution. The pipe worked as a FIFO so as we read from the buffer we would link
+  the items together forming a linked list of the items. Once we read the buffer
+  since it was a FIFO we wrote the updated linked list back into it for the next
+  read.
 
-  Each process is represented by a struct with several fields. Those fields are a 
-  *next pointer, a *prev pointer, a CPUburst which is itself a pointer to a struct,
-  an IOburst which is another pointer to a struct, and some integers, such as the
-  process id (pid), the aTime or arrival time, the wTime or wait time, and the
-  rTime, or running time for that process.  
+  ==== Forks ====
 
-  The CPUburst struct represents a single CPUburst for that process, and is itself
-  a linked list of all the CPUbursts for that process.  This is also the same case
-  for the IObursts of a process.
+  We used forks in order to service multiple clients on the same server. The
+  parent waits for requests and the children each service its own client. We
+  also forked the clients into a child and parent so that one process could
+  continuously receive messages from the server and the other would handle
+  the user interface.
 
+  ==== Sockets ====
 
-  ==== Queues ====
+  We used sockets for communication between the server and clients. The clients
+  requested information and the server send the a response message back.
 
-  Queue structs have the following fields.
+  ==== Semaphore ===
 
-  head, which is a pointer to the first process in that queue. The process itself
-  points to the next process in that queue and is adjusted accordingly for each
-  queue. When a process is executed it is popped from the list and belongs to no
-  queue, therefore has no next or prev.
+  We used semaphores in order to make sure there were no race conditions while
+  reading or writing to the pipe. We used a semaphore as a mutex that woudl lock
+  when we started to read the buffer, and only unlock once we wrote the values
+  back in to the buffer. We also used a semaphore to communicate to a seperate
+  process that a message needed to be sent such as the case of a buyer
+  outbidding another.
 
-  tQ, or the time quantum for that queue.  This is undefined for queues that do not
-    have a time quantum, such as the SRTF and the IO queues. 
+  ==== Extra Credit ====
 
-  status, or essentially the queue number for Q1, Q2, and Q3, and undefined for
-    other queues.  This was done to be able to recognize which queue a process had
-    been scheduled from in the case of a preemption.
-
-  The first struct is called nextProc, which is not one of the primary queues, but
-    represents the "arrival" queue of processes that have yet to be placed into Q1.
-
-
-  IOqueues are also implemented using the same queue struct, and are simple FCFS 
-    queues.
-
-
-  ==== Parser ====
-
-  A parser was used to read in all of the lines of the input file to then be processed.
-    The results of the parsing are returned as a struct, and from there, the queues
-    are setup in the main function.
-
-  
+  We were able to get the outbid message to show up on the buyer instantly, we
+  achieved this by initializing a semaphore to 0. We posted it when we detected
+  that someone had outbid someone else. Within the while loop that waited to
+  receive input we're also doing a trylock, so once someone posts the semaphore
+  the other processes know that someone has been outbid they each go into the
+  locked code and check if they were the ones who were outbid if they were not
+  they post the semaphore again to allow another process to check if it was
+  outbid. If the process sees it was outbid it sends the message to its client
+  and doesn't post the semaphore back. We unfortunately forgot about sending
+  the you have won an item message, but had we remembered it we would've
+  implemented it in the same way.
