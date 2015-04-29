@@ -14,6 +14,9 @@
 
 #define MAX_INPUT_SIZE 40
 
+//#define mutex	"/mutex"
+//#define outbid	"/outbid"
+
 int SELLER_PORT = 5372;
 int BUYER_PORT  = 5373;
 int backlog = 10;
@@ -23,10 +26,11 @@ char outbid_msg[512] = "";
 char name[9] = "";
 char *names[6] = {"alice","bob","dave","pam","susan","tom"};
 itemListP itemlist;
-sem_t mutex;
-sem_t outbid;
+sem_t *mutex;
+sem_t *outbid;
 int selsockfd, buysockfd, newsockfd;
-
+//int static *BITMASK;
+//int bitval=0;
 
 void main() {
   int clilen;
@@ -44,11 +48,15 @@ void main() {
   sa.sa_flags = 0;
   sigaction(SIGINT, &sa, NULL);
 
-  sem_init(&mutex, 1, 1);
-  sem_init(&outbid, 1, 0);
+  mutex = sem_open("/mutex", O_CREAT, 0644, 1);
+  outbid = sem_open("/outbid", O_CREAT, 0644, 0);
   ret = pipe2(channel, O_NONBLOCK);
   if(ret<0) printf("DEBUG pipe->%d_%s",ret,strerror(errno));
 
+//  BITMASK = mmap(NULL, sizeof *BITMASK, PROT_READ | PROT_WRITE,
+//                 MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+//  *BITMASK = 0;
   selsockfd = socket(AF_INET, SOCK_STREAM, 0);
   buysockfd = socket(AF_INET, SOCK_STREAM, 0);
   bzero((char *)&sel_addr, sizeof(sel_addr));
@@ -146,7 +154,7 @@ void main() {
               pch = strtok(NULL, " \n");
               strcpy(name, pch);
               printf("here\n");
-              login=clientLogin(pch);//returns 0 on success
+              login=clientLogin();//returns 0 on success
               printf("login val: %d\n", login);
               sendResponse(newsockfd, BUYER_LOGIN, login);
             }
@@ -157,18 +165,28 @@ void main() {
 	setsockopt(newsockfd, SOL_SOCKET, SO_RCVTIMEO,&t,
 		sizeof(struct timeval));
         while(1){
-          ret = sem_trywait(&outbid);
-	  printf("DEBUG_ret:%d\n",ret);
-          if(ret == 0){
-	    printf("DEBUG\n");
-            ret=updateItemList(ITEM_OUTBID, NULL);
-            if(ret != OUTBID) sem_post(&outbid);
-            else{
-	      ret = (int)send(newsockfd, outbid_msg,strlen(outbid_msg),0);
-	      printf("outbidmsg:%s ret: %d\n",outbid_msg, ret);
-	      strcpy(outbid_msg,"");
-            }
-          }
+          //if(((*BITMASK) & bitval)==0){
+	    int val;
+	    ret = sem_trywait(outbid);
+	    if(ret==0){
+	      printf("DEBUG\n");
+              ret=updateItemList(ITEM_OUTBID, NULL);
+	      printf("DEBUG_ret:%d\n",ret);
+              if(ret != OUTBID){
+	     //   (*BITMASK) |= bitval;
+	        sem_post(outbid);
+		int val;
+		sem_getvalue(outbid, &val);
+	        printf("%s posted outbid_val:%d\n",name,val);
+	      }
+              else{
+	    //    *BITMASK = 0;
+	        ret = (int)send(newsockfd,outbid_msg,strlen(outbid_msg),0);
+	        printf("outbidmsg:%s ret: %d\n",outbid_msg, ret);
+	        strcpy(outbid_msg,"");
+              }
+	    }
+          //}
           ret = (int)recv(newsockfd, data, sizeof(data), 0);
           if(ret>0){
             p = data;
@@ -206,6 +224,8 @@ int clientLogin(){
       code = strcmp(names[i], name);
       if(code == 0){
         names[i] = NULL;
+	//bitval = 1<<i;
+        //printf("bitval_%d\n",bitval);
         return LOGINSUCCESS;
       }
     }
@@ -321,13 +341,16 @@ int updateItemList(int flag, itemP newitem){
   itemP item = malloc(sizeof(itemR));
   itemListP previtem = NULL;
   itemListP head = itemlist;
+  printf("%s in updateIList\n",name);
   if(flag == ITEM_OUTBID) printf("DEBUG_ibdr:%s\n",itemlist->data->bidder);
 
-  sem_wait(&mutex);
+  sem_wait(mutex);
 //////////////////////////////////////////////////////////////////////////
   ret = (int)read(channel[0], item, sizeof(itemR));
   while(ret>0){
-    if(flag!=ITEM_UPDATE && item->id==newitem->id) stat = EXISTS;
+    if(flag!=ITEM_UPDATE && flag!=ITEM_OUTBID && item->id==newitem->id){
+      stat = EXISTS;
+    }
     if(flag==ITEM_ADD && item->item_number==newitem->item_number){
       stat = EXISTS;
     }
@@ -335,7 +358,7 @@ int updateItemList(int flag, itemP newitem){
 	item->bid < newitem->bid){
       printf("DEBUG_oldbid:%d newbid:%d\n",item->bid,newitem->bid);
       if(item->bid != 0){
-	sem_post(&outbid);
+	sem_post(outbid);
 	printf("outbid detected\n");
       }
       item->bid = newitem->bid;
@@ -372,10 +395,10 @@ int updateItemList(int flag, itemP newitem){
       continue;
     }
     else{
-      printf("DEBUG\n");
+      printf("DEBUG_olbdr:%s newbdr:%s\n",itemlist->data->bidder, item->bidder);
       if(flag==ITEM_OUTBID && strcmp(itemlist->data->bidder,name)==0
 	 && strcmp(itemlist->data->bidder,item->bidder)!=0){
-        printf("DEBUG\n");
+        printf("DEBUG_IN\n");
 	sprintf(temp,"%s has outbid you on %s\n",
 		item->bidder,item->item_name);
         printf("DEBUG_temp:%s\n",temp);
@@ -436,7 +459,7 @@ int updateItemList(int flag, itemP newitem){
     itemlist = itemlist->next;
   }
 //////////////////////////////////////////////////////////////////////////
-  sem_post(&mutex);
+  sem_post(mutex);
   itemlist = head;
   return ret;
 }

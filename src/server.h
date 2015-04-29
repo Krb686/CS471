@@ -21,6 +21,15 @@
 #define SUCCESS		0
 #define FAIL		-1
 
+#define BIT0		1
+#define BIT1		2
+#define BIT2		4
+#define BIT3		8
+#define BIT4		16
+#define BIT5		32
+#define BIT6		64
+#define BIT7		128
+
 typedef struct items{
   int item_number, id, bid;
   char item_name[32], bidder[9];
