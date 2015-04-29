@@ -77,7 +77,7 @@ void main(){
       exit(0);
     }
 
-    if(strcmp(response, "0") == 0){
+    if(strcmp(response, "Login successful!\n") == 0){
       login = 0;
     } else {
       printf("The server rejected the login request.  Please ensure the username is correct\n");
@@ -87,9 +87,10 @@ void main(){
   //Loop and print output responses from the server
   if((pid = fork()) != 0){
     while(1){
+      memset(data, 0, strlen(data));
       ret = (int)recv(sockfd, data, sizeof(data), 0);
       if(ret > 0){
-        printf("<%s>,ret:%d\n", data,ret);
+        printf("%s\n>>", data);
       }
     }
   } else {

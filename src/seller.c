@@ -66,7 +66,7 @@ void main(){
       printf("%d_err:%s\n", ret, strerror(errno));
       exit(0);
     }
-    if(strcmp(response, "0")==0){
+    if(strcmp(response, "Login successful!\n")==0){
       login = 0;
     }
     else{
@@ -76,6 +76,7 @@ void main(){
   if((pid = fork()) != 0){
     
     while(1){
+      memset(data, 0, strlen(data));
       ret = (int)recv(sockfd, data, sizeof(data), 0);
       if(ret>0){
         printf("\n<%s>\n>>",data);

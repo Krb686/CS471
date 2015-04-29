@@ -20,6 +20,7 @@
 
 #define SUCCESS		0
 #define FAIL		-1
+#define INSUFFICIENT_BID 8
 
 #define SELL_NO_BID	1
 

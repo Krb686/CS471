@@ -325,26 +325,34 @@ int sendResponse(int newsockfd, int from, int code){
   char responseStr[MAX_INPUT_SIZE] = "";
 
 
-  if(from == BUYER_LOGIN){
-    sprintf(responseStr, "%d", code);  
-    printf("response:%s ret: %d\n",responseStr, ret);
-  } else if(from == SELLER_LOGIN){
-    sprintf(responseStr, "%d", code);
-    printf("response ret: %d\n", ret);
+  if((from == BUYER_LOGIN) || (from == SELLER_LOGIN)){
+    sprintf(responseStr, "Login successful!\n");
+    strcat(responseStr, "\0");
   } else if(from == SELL){
     if(code == SELL_NO_BID){
       sprintf(responseStr, "Cannot sell an item with no bids!\n");
       strcat(responseStr, "\0");
+    } else if(code == FAIL){
+      sprintf(responseStr, "Invalid item number\n");
+      strcat(responseStr, "\0");
+    } else if(code == SUCCESS){
+      sprintf(responseStr, "Item sold successfully\n");
+      strcat(responseStr, "\0");
     }
   } else if(from == BID){
-    sprintf(responseStr, "Your bid has been entered\n");
-    strcat(responseStr, "\0");
+    if(code == INSUFFICIENT_BID){
+      sprintf(responseStr, "Insufficient bid amount\n");
+      strcat(responseStr, "\0");
+    } else if(code == SUCCESS){
+      sprintf(responseStr, "Your bid has been entered\n");
+      strcat(responseStr, "\0");
+    }
   } else if(from == ADD){
     if(code == 0){
       sprintf(responseStr, "Item added to the list\n");
       strcat(responseStr, "\0");
     } else {
-      sprintf(responseStr, "Item could not be added\n");
+      sprintf(responseStr, "Item number already in use\n");
       strcat(responseStr, "\0");
     }
   }
